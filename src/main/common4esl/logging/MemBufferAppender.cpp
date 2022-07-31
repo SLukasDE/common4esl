@@ -143,14 +143,20 @@ void MemBufferAppender::write(const esl::logging::Location& location, const char
     	entries[rowProducer].location = location;
 	}
 
-	const char* begin = str;
+	if(len > 0) {
+		const char* begin = str;
 
-	for(auto iter = str; iter != &str[len]; ++iter) {
-		if(*iter == '\n') {
-            write(begin, iter-begin);
-            newline();
-        	entries[rowProducer].location = location;
-			begin = iter+1;
+		for(auto iter = str; iter != &str[len]; ++iter) {
+			if(*iter == '\n') {
+	            write(begin, iter-begin);
+	            newline();
+	        	entries[rowProducer].location = location;
+				begin = iter+1;
+			}
+		}
+
+		if(begin != &str[len]) {
+            write(begin, &str[len]-begin);
 		}
 	}
 }
