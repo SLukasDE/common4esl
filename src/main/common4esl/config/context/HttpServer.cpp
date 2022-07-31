@@ -129,7 +129,6 @@ void HttpServer::install(processing::Context& context) const {
 			}
 		}
 	}
-	context.addObject(id, create());
 }
 
 std::unique_ptr<esl::object::Object> HttpServer::create() const {

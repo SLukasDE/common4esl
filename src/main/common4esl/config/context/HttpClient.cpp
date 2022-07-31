@@ -129,7 +129,6 @@ void HttpClient::install(processing::Context& context) const {
 			}
 		}
 	}
-	context.addObject(id, create());
 }
 
 std::unique_ptr<esl::object::Object> HttpClient::create() const {

@@ -4,7 +4,7 @@
 namespace common4esl {
 namespace config {
 
-Setting::Setting(const std::string& fileName, const tinyxml2::XMLElement& element, bool isParameter)
+Setting::Setting(const std::string& fileName, const tinyxml2::XMLElement& element, bool allowLanguage)
 : Config(fileName, element)
 {
 	if(element.GetUserData() != nullptr) {
@@ -30,7 +30,7 @@ Setting::Setting(const std::string& fileName, const tinyxml2::XMLElement& elemen
 			value = attribute->Value();
 			hasValue = true;
 		}
-		else if(std::string(attribute->Name()) == "language" && isParameter) {
+		else if(std::string(attribute->Name()) == "language" && allowLanguage) {
 			if(hasLanguage) {
 				throw FilePosition::add(*this, "Multiple definition of attribute 'language'.");
 			}
