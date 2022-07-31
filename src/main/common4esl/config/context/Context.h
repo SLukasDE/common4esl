@@ -3,7 +3,6 @@
 
 #include <common4esl/config/Config.h>
 #include <common4esl/config/context/Entry.h>
-//#include <common4esl/config/logging/Logger.h>
 #include <common4esl/config/Setting.h>
 #include <common4esl/processing/Context.h>
 
@@ -47,11 +46,10 @@ private:
 
 	tinyxml2::XMLDocument xmlDocument;
 
-	std::vector<std::pair<std::string, esl::plugin::Library*>> libraries;
+	std::vector<std::pair<std::string, std::string>> libraries;
 	std::vector<std::unique_ptr<Entry>> entries;
 
 	std::set<std::string> filesLoaded;
-	//std::vector<logging::Logger> eslLoggers;
 
 	std::unique_ptr<esl::object::Object> create() const;
 	void parseInnerElement(const tinyxml2::XMLElement& element);
