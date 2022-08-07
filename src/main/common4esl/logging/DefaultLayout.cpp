@@ -5,10 +5,11 @@
 #include <esl/system/Stacktrace.h>
 #include <esl/utility/String.h>
 
-#include <functional>
-#include <time.h>
+#include <chrono>
 #include <ctime>
+#include <functional>
 #include <stdexcept>
+#include <time.h>
 
 namespace common4esl {
 namespace logging {
@@ -52,6 +53,12 @@ std::string formatTimestamp(const std::time_t& timestamp) {
             timePtr->tm_min,
             timePtr->tm_sec);
     return timeStr;
+}
+
+std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& time_point) {
+	auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch());
+	std::time_t timestamp = millisecs.count() / 1000;
+	return formatTimestamp(timestamp);
 }
 
 std::string formatLevel(esl::logging::Level level) {
