@@ -4,10 +4,12 @@
 #include <common4esl/processing/TaskBinding.h>
 //#include <common4esl/processing/TaskThread.h>
 
+#include <esl/object/Object.h>
 #include <esl/processing/TaskDescriptor.h>
 #include <esl/processing/TaskFactory.h>
 #include <esl/processing/Status.h>
 #include <esl/processing/Task.h>
+//#include <esl/version.h>
 
 #include <atomic>
 #include <chrono>
@@ -31,7 +33,10 @@ public:
 	friend class TaskBinding;
 	friend class TaskThread;
 
-	static std::unique_ptr<esl::processing::TaskFactory> create(const std::vector<std::pair<std::string, std::string>>& settings);
+#ifndef ESL_1_6
+	static std::unique_ptr<esl::processing::TaskFactory> createTaskFactory(const std::vector<std::pair<std::string, std::string>>& settings);
+	static std::unique_ptr<esl::object::Object> createObject(const std::vector<std::pair<std::string, std::string>>& settings);
+#endif
 
 	TaskFactory(const std::vector<std::pair<std::string, std::string>>& settings);
 	~TaskFactory();

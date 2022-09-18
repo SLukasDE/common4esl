@@ -4,9 +4,15 @@
 namespace common4esl {
 namespace processing {
 
-std::unique_ptr<esl::processing::TaskFactory> TaskFactory::create(const std::vector<std::pair<std::string, std::string>>& settings) {
+#ifndef ESL_1_6
+std::unique_ptr<esl::processing::TaskFactory> TaskFactory::createTaskFactory(const std::vector<std::pair<std::string, std::string>>& settings) {
 	return std::unique_ptr<esl::processing::TaskFactory>(new TaskFactory(settings));
 }
+
+std::unique_ptr<esl::object::Object> TaskFactory::createObject(const std::vector<std::pair<std::string, std::string>>& settings) {
+	return std::unique_ptr<esl::object::Object>(new TaskFactory(settings));
+}
+#endif
 
 TaskFactory::TaskFactory(const std::vector<std::pair<std::string, std::string>>& settings) {
     for(const auto& setting : settings) {

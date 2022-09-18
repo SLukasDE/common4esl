@@ -26,49 +26,67 @@ std::string Config::evaluate(const std::string& expression, const std::string& l
 	if(language == "plain") {
 		return expression;
 	}
+	else if(language == "") { // || language == "env-var") {
+		std::string value;
+		std::string var;
+		std::string tmpValue;
+		enum {
+			intro,
+			begin,
+			end
+		} state = end;
 
-	std::string value;
-	std::string var;
-	enum {
-		intro,
-		begin,
-		end
-	} state = end;
-
-	for(std::size_t i=0; i<expression.size(); ++i) {
-		if(state == begin) {
-			if(expression.at(i) == '}') {
-				char* val = getenv(var.c_str());
-				if(val == nullptr) {
-					throw FilePosition::add(*this, "No value available for variable \"" + var + "\" in expression: \"" + expression + "\"");
+		for(std::size_t i=0; i<expression.size(); ++i) {
+			if(state == begin) {
+				if(expression.at(i) == '}') {
+					char* val = getenv(var.c_str());
+					if(val == nullptr) {
+						throw FilePosition::add(*this, "No value available for variable \"" + var + "\" in expression: \"" + expression + "\"");
+					}
+					value += val;
+					state = end;
+					var.clear();
+					tmpValue.clear();
 				}
-				value += val;
-				state = end;
-				var.clear();
+				else {
+					var += expression.at(i);
+					tmpValue = expression.at(i);
+				}
+			}
+			else if(state == intro) {
+				if(expression.at(i) == '{') {
+					state = begin;
+				}
+				else {
+					//throw FilePosition::add(*this, "Syntax error in expression: \"" + expression + "\"");
+
+					state = end;
+
+					value += tmpValue;
+					tmpValue.clear();
+
+					value += expression.at(i);
+				}
 			}
 			else {
-				var += expression.at(i);
+				if(expression.at(i) == '$') {
+					state = intro;
+					tmpValue = expression.at(i);
+				}
+				else {
+					value += expression.at(i);
+				}
 			}
 		}
-		else if(state == intro) {
-			if(expression.at(i) == '{') {
-				state = begin;
-			}
-			else {
-				throw FilePosition::add(*this, "Syntax error in expression: \"" + expression + "\"");
-			}
+
+		if(state != end) {
+			value += tmpValue;
 		}
-		else {
-			if(expression.at(i) == '$') {
-				state = intro;
-			}
-			else {
-				value += expression.at(i);
-			}
-		}
+
+		return value;
 	}
 
-	return value;
+	throw FilePosition::add(*this, "Syntax error in expression. Unknown language \"" + language + "\"");
 }
 
 const std::string& Config::getFileName() const noexcept {

@@ -4,18 +4,13 @@
 #include <common4esl/processing/ContextEntry.h>
 
 #include <esl/processing/Context.h>
-#include <esl/logging/StreamReal.h>
-#include <esl/logging/StreamEmpty.h>
-#include <esl/logging/Location.h>
 #include <esl/object/InitializeContext.h>
 #include <esl/object/Object.h>
 #include <esl/object/Context.h>
 #include <esl/processing/Procedure.h>
-#include <esl/system/Stacktrace.h>
 
 #include <boost/filesystem/path.hpp>
 
-#include <exception>
 #include <map>
 #include <memory>
 #include <ostream>
@@ -55,54 +50,16 @@ protected:
 private:
 	Context* parent = nullptr;
 
-	enum HandleException {
-		rethrow,
-		stop,         // (add or override exception object)
-		stopAndShow,  // (add or override exception object)
-		ignore,       // (continue)
-		ignoreAndShow // (continue)
-	};
-	bool hasHandleException = false;
-	HandleException handleException = stop;
+	bool isInitialized = false;
 
-	bool hasShowStacktrace = false;
-	bool showStacktrace = true;
-
-	bool hasShowFilePosition = false;
-	bool showFilePosition = true;
-
-	struct ShowOutput {
-		ShowOutput(std::ostream& aOStream)
-		: ostream(&aOStream)
-		{}
-
-		ShowOutput(esl::logging::StreamReal& aStreamReal)
-		: streamReal(&aStreamReal)
-		{}
-
-		ShowOutput(esl::logging::StreamEmpty& aStreamEmpty)
-		: streamEmpty(&aStreamEmpty)
-		{}
-
-		std::ostream* ostream = nullptr;
-		esl::logging::StreamReal* streamReal = nullptr;
-		esl::logging::StreamEmpty* streamEmpty = nullptr;
-	};
-	std::unique_ptr<ShowOutput> showOutput;
+	std::string exceptionHandlerId;
+	esl::processing::Procedure* exceptionHandler = nullptr;
 
 	std::vector<std::unique_ptr<ContextEntry>> entries;
 
 	struct IdElement {
-		IdElement(std::unique_ptr<esl::object::Object> aObject)
-		: object(std::move(aObject)),
-		  refObject(*object),
-		  initializeContext(dynamic_cast<esl::object::InitializeContext*>(&refObject))
-		{ }
-
-		IdElement(esl::object::Object& refObject)
-		: refObject(refObject),
-		  initializeContext(nullptr)
-		{ }
+		IdElement(std::unique_ptr<esl::object::Object> aObject);
+		IdElement(esl::object::Object& refObject);
 
 		std::unique_ptr<esl::object::Object> object;
 		esl::object::Object& refObject;
@@ -111,13 +68,6 @@ private:
 	std::map<std::string, IdElement> objects;
 
 	int returnCode = 0;
-#if 0
-	void printException(std::ostream& stream, int level, const std::exception& e, const std::string& plainException, const std::string& plainDetails, const esl::system::Stacktrace* stacktrace);
-	void printException(esl::logging::StreamReal& stream, int level, const std::exception& e, const std::string& plainException, const std::string& plainDetails, const esl::system::Stacktrace* stacktrace, esl::logging::Location location);
-
-	void printException(std::ostream& stream, std::exception_ptr exceptionPointer);
-	void printException(esl::logging::StreamReal& stream, std::exception_ptr exceptionPointer, esl::logging::Location location = esl::logging::Location{});
-#endif
 };
 
 } /* namespace processing */

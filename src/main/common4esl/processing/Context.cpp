@@ -1,6 +1,6 @@
 #include <common4esl/config/context/Context.h>
-#include <common4esl/ExceptionHandler.h>
 #include <common4esl/Logger.h>
+//#include <common4esl/processing/ExceptionHandler.h>
 #include <common4esl/processing/Context.h>
 
 #include <esl/com/http/server/exception/StatusCode.h>
@@ -18,107 +18,41 @@ namespace {
 Logger logger("common4esl::processing::Context");
 } /* anonymous namespace */
 
+Context::IdElement::IdElement(std::unique_ptr<esl::object::Object> aObject)
+: object(std::move(aObject)),
+  refObject(*object),
+  initializeContext(dynamic_cast<esl::object::InitializeContext*>(&refObject))
+{ }
+
+Context::IdElement::IdElement(esl::object::Object& refObject)
+: refObject(refObject),
+  initializeContext(nullptr)
+{ }
+
 std::unique_ptr<esl::processing::Context> Context::create(const std::vector<std::pair<std::string, std::string>>& settings) {
 	return std::unique_ptr<esl::processing::Context>(new Context(settings));
 }
 
 Context::Context(const std::vector<std::pair<std::string, std::string>>& settings) {
-    for(const auto& setting : settings) {
-		if(setting.first == "handle-exception") {
-			if(hasHandleException) {
-		        throw std::runtime_error("multiple definition of attribute 'handle-exception'.");
+	for(const auto& setting : settings) {
+		if(setting.first == "exception-handler") {
+			if(!exceptionHandlerId.empty()) {
+		        throw std::runtime_error("multiple definition of attribute 'exception-handler'.");
 			}
-			hasHandleException = true;
-			if(setting.second == "rethrow") {
-				handleException = rethrow;
-			}
-			else if(setting.second == "stop") {
-				handleException = stop;
-			}
-			else if(setting.second == "stop-and-show") {
-				handleException = stopAndShow;
-			}
-			else if(setting.second == "ignore") {
-				handleException = ignore;
-			}
-			else if(setting.second == "ignore-and-show") {
-				handleException = ignoreAndShow;
-			}
-			else {
-		    	throw std::runtime_error("Invalid value \"" + setting.second + "\" for attribute 'show-exception'");
-			}
-		}
-		else if(setting.first == "show-stacktrace") {
-			if(hasShowStacktrace) {
-		        throw std::runtime_error("multiple definition of attribute 'show-stacktrace'.");
-			}
-			std::string value = esl::utility::String::toLower(setting.second);
-			hasShowStacktrace = true;
-			if(value == "true") {
-				showStacktrace = true;
-			}
-			else if(value == "false") {
-				showStacktrace = false;
-			}
-			else {
-		    	throw std::runtime_error("Invalid value \"" + setting.second + "\" for attribute 'show-stacktrace'");
-			}
-		}
-		else if(setting.first == "show-output") {
-			if(showOutput) {
-		        throw std::runtime_error("multiple definition of attribute 'show-output'.");
+			exceptionHandlerId = setting.second;
+			if(exceptionHandlerId.empty()) {
+		    	throw std::runtime_error("Invalid value \"\" for attribute 'exception-handler'");
 			}
 
-			if(setting.second == "stdout") {
-				showOutput.reset(new ShowOutput(std::cout));
-			}
-			else if(setting.second == "stderr") {
-				showOutput.reset(new ShowOutput(std::cerr));
-			}
-			else if(setting.second == "trace") {
-				showOutput.reset(new ShowOutput(logger.trace));
-			}
-			else if(setting.second == "debug") {
-				showOutput.reset(new ShowOutput(logger.debug));
-			}
-			else if(setting.second == "info") {
-				showOutput.reset(new ShowOutput(logger.info));
-			}
-			else if(setting.second == "warn") {
-				showOutput.reset(new ShowOutput(logger.warn));
-			}
-			else if(setting.second == "error") {
-				showOutput.reset(new ShowOutput(logger.error));
-			}
-			else {
-		    	throw std::runtime_error("Invalid value \"" + setting.second + "\" for attribute 'show-output'");
-			}
 		}
 		else {
             throw std::runtime_error("unknown attribute '\"" + setting.first + "\"'.");
 		}
     }
-
-	if(!showOutput && handleException == stopAndShow) {
-        throw std::runtime_error("Definition of 'handle-exception' = 'stop-and-show' without definition of 'show-output'.");
-	}
-	if(!showOutput && handleException == ignoreAndShow) {
-        throw std::runtime_error("Definition of 'handle-exception' = 'ignore-and-show' without definition of 'show-output'.");
-	}
-	if(showOutput && handleException != stopAndShow && handleException != ignoreAndShow) {
-		logger.warn << "Definition of 'show-output' is useless if definition of 'handle-exception' is neither 'stop-and-show' nor 'ignore-and-show'";
-	}
-	if(hasShowStacktrace && showStacktrace && handleException != stopAndShow && handleException != ignoreAndShow) {
-		logger.warn << "Definition of 'show-stacktrace' is useless if definition of 'handle-exception' is neither 'stop-and-show' nor 'ignore-and-show'";
-	}
 }
 
 void Context::setParent(Context* parentContext) {
 	parent = parentContext;
-
-	if(!hasHandleException) {
-		handleException = parent ? rethrow : showOutput ? stopAndShow : stop;
-	}
 }
 
 esl::processing::Context& Context::addData(const std::string& configuration) {
@@ -164,7 +98,9 @@ int Context::getReturnCode() const {
 }
 
 void Context::onEvent(const esl::object::Object& object) {
-	initializeContext(*this);
+	if(!isInitialized) {
+		initializeContext(*this);
+	}
 
 	for(auto& entry : entries) {
 		entry->onEvent(object);
@@ -182,66 +118,58 @@ std::set<std::string> Context::getObjectIds() const {
 }
 
 void Context::procedureRun(esl::object::Context& context) {
-	initializeContext(*this);
+	if(!isInitialized) {
+		initializeContext(*this);
+	}
+
+	if(!exceptionHandler) {
+		for(auto& entry : entries) {
+			entry->procedureRun(context);
+			continue;
+		}
+		return;
+	}
 
 	for(auto& entry : entries) {
-		if(handleException == rethrow) {
+		try {
 			entry->procedureRun(context);
 		}
-		else {
-			try {
-				entry->procedureRun(context);
-			}
-			catch(...) {
-				if(showOutput && (handleException == stopAndShow || handleException == ignoreAndShow)) {
-					if(showOutput->ostream) {
-						if(esl::logging::Logging::get()) {
-							esl::logging::Logging::get()->flush(showOutput->ostream);
-						}
-						ExceptionHandler(std::current_exception(), showStacktrace, showFilePosition).dump(*showOutput->ostream);
-						//printException(*showOutput->ostream, std::current_exception());
-					}
-					else if(showOutput->streamReal) {
-						std::stringstream oStream;
-						if(esl::logging::Logging::get()) {
-							esl::logging::Logging::get()->flush(&oStream);
-						}
-						(*showOutput->streamReal) << oStream.str();
-						ExceptionHandler(std::current_exception(), showStacktrace, showFilePosition).dump(*showOutput->streamReal);
-						//printException(*showOutput->streamReal, std::current_exception(), esl::logging::Location{});
-					}
+		catch(...) {
+			esl::object::Value<std::exception_ptr>* exceptionObjectPtr;
+			{
+				esl::object::Object* objectPtr = context.findObject<esl::object::Object>("exception");
+
+				if(objectPtr) {
+					exceptionObjectPtr = dynamic_cast<esl::object::Value<std::exception_ptr>*>(objectPtr);
 				}
+				else {
+					context.addObject("exception", std::unique_ptr<esl::object::Value<std::exception_ptr>>(new esl::object::Value<std::exception_ptr>(std::current_exception())));
+					exceptionObjectPtr = context.findObject<esl::object::Value<std::exception_ptr>>("exception");
+				}
+			}
 
-				if(handleException == stop || handleException == stopAndShow) {
-					esl::object::Object* objectPtr = context.findObject<esl::object::Object>("exception");
-					esl::object::Value<std::exception_ptr>* exceptionObjectPtr = dynamic_cast<esl::object::Value<std::exception_ptr>*>(objectPtr);
-
-					if(exceptionObjectPtr) {
-						*exceptionObjectPtr = std::current_exception();
-					}
-					else if(objectPtr == nullptr) {
-						context.addObject("exception", std::unique_ptr<esl::object::Value<std::exception_ptr>>(new esl::object::Value<std::exception_ptr>(std::current_exception())));
-					}
-
+			if(exceptionObjectPtr) {
+				exceptionHandler->procedureRun(context);
+				if(**exceptionObjectPtr) {
 					break;
 				}
 			}
 		}
 	}
-
-	ReturnCodeObject* returnCodeObject = context.findObject<ReturnCodeObject>("return-code");
-	if(returnCodeObject) {
-		returnCode = **returnCodeObject;
-	}
 }
 
-void Context::initializeContext(esl::object::Context&) {
+void Context::initializeContext(esl::object::Context& context) {
+	isInitialized = true;
+	if(!exceptionHandlerId.empty()) {
+		exceptionHandler = &getObject<esl::processing::Procedure>(exceptionHandlerId);
+	}
+
 	for(auto& entry : entries) {
-		entry->initializeContext(*this);
+		entry->initializeContext(context);
 	}
 	for(auto& object : objects) {
 		if(object.second.initializeContext) {
-			object.second.initializeContext->initializeContext(*this);
+			object.second.initializeContext->initializeContext(context);
 			object.second.initializeContext = nullptr;
 		}
 	}
