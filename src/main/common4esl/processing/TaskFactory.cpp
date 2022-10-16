@@ -1,8 +1,14 @@
+#include <common4esl/Logger.h>
 #include <common4esl/processing/TaskFactory.h>
 #include <common4esl/processing/TaskThread.h>
 
+#include <sys/sysinfo.h>
+
 namespace common4esl {
 namespace processing {
+namespace {
+Logger logger("common4esl::processing::TaskFactory");
+}
 
 #ifndef ESL_1_6
 std::unique_ptr<esl::processing::TaskFactory> TaskFactory::createTaskFactory(const std::vector<std::pair<std::string, std::string>>& settings) {
@@ -26,11 +32,11 @@ TaskFactory::TaskFactory(const std::vector<std::pair<std::string, std::string>>&
 				tmpMaxThreads = std::stol(setting.second);
 			}
 			catch(...) {
-	            throw std::runtime_error("jboot: Invalid value \"" + setting.second + "\" for attribute 'max-threads'.");
+	            throw std::runtime_error("Invalid value \"" + setting.second + "\" for attribute 'max-threads'.");
 			}
 
 			if(tmpMaxThreads <= 0 || tmpMaxThreads > 1000) {
-	            throw std::runtime_error("jboot: Invalid value \"" + std::to_string(tmpMaxThreads) + "\" for attribute 'max-threads'. Value has to be between 1 and 1000.");
+	            throw std::runtime_error("Invalid value \"" + std::to_string(tmpMaxThreads) + "\" for attribute 'max-threads'. Value has to be between 1 and 1000.");
 			}
 			threadsMax.store(static_cast<unsigned int>(tmpMaxThreads));
 		}
@@ -52,7 +58,15 @@ TaskFactory::TaskFactory(const std::vector<std::pair<std::string, std::string>>&
     }
 
 	if(threadsMax.load() == 0) {
-        throw std::runtime_error("Definition of 'max-threads' is missing.");
+	    int nProcs = get_nprocs();
+		if(nProcs > 0) {
+			logger.trace << "ThreadFactory: nProcs = " << nProcs << "\n";
+			threadsMax.store(static_cast<unsigned int>(nProcs));
+		}
+	}
+
+	if(threadsMax.load() == 0) {
+		throw std::runtime_error("Definition of 'max-threads' is missing.");
 	}
 
 }
@@ -91,8 +105,20 @@ esl::processing::Task TaskFactory::createTask(esl::processing::TaskDescriptor de
 
 	{
 		std::lock_guard<std::mutex> lockThreadMutex(threadsMutex);
-		if(threadsProcessing.size() < threadsMax) {
+
+		if(logger.trace) {
+			logger.trace << "threadsMax:               " << threadsMax << "\n";
+			logger.trace << "threadsAvailable:         " << threadsAvailable << "\n";
+			logger.trace << "threadsProcessing.size(): " << threadsProcessing.size() << "\n";
+		}
+
+		if(threadsAvailable < threadsMax) {
+//		if(threadsProcessing.size() < threadsMax) {
+			logger.trace << "-> create new thread\n";
 			TaskThread::create(*this);
+		}
+		else {
+			logger.trace << "-> task queued\n";
 		}
 	}
 

@@ -22,7 +22,8 @@ public:
 
 private:
 	void initialize(std::exception_ptr exceptionPointer);
-	void addEntry(const std::exception& e, const std::string& aPlainException, const char* what, const std::string& details = "");
+	template<typename E>
+	void addEntry(const E& e, const std::string& aPlainException, const char* what, const std::string& details = "");
 
 	bool showStacktrace;
 	bool showFilePosition;

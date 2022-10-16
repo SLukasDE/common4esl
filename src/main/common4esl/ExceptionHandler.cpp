@@ -8,17 +8,18 @@
 #include <esl/plugin/Registry.h>
 #include <esl/system/Stacktrace.h>
 
+#include <exception>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 
 namespace common4esl {
 namespace {
-std::string createFileMessage(const esl::io::FilePosition* filePosition) {
+std::string createFilePositionMessage(const esl::io::FilePosition* filePosition) {
 	return filePosition ? "file \"" + filePosition->getFileName() + "\", line " + std::to_string(filePosition->getLineNo()) : "";
 }
 
-std::string createStackstrace(const esl::system::Stacktrace* stacktrace) {
+std::string createStackstraceMessage(const esl::system::Stacktrace* stacktrace) {
 	std::stringstream sstream;
 	if(stacktrace) {
 		stacktrace->dump(sstream);
@@ -46,18 +47,22 @@ void ExceptionHandler::dump(std::ostream& stream) const {
 			}
 		}
 
-		if(!entries[i].fileMessage.empty()) {
-			stream << "[" << (i+1) << "] File      : " << entries[i].fileMessage;
-			if(entries[i].fileMessage.at(entries[i].fileMessage.size()-1) != '\n') {
-				stream << "\n";
+		if(showFilePosition) {
+			if(entries[i].fileMessage.empty()) {
+				stream << "[" << (i+1) << "] File      : not available\n";
+			}
+			else {
+				stream << "[" << (i+1) << "] File      : " << entries[i].fileMessage << "\n";
 			}
 		}
 
-		if(entries[i].stacktrace.empty()) {
-			stream << "[" << (i+1) << "] Stacktrace: not available\n";
-		}
-		else {
-			stream << "[" << (i+1) << "] Stacktrace: " << entries[i].stacktrace << "\n";
+		if(showStacktrace) {
+			if(entries[i].stacktrace.empty()) {
+				stream << "[" << (i+1) << "] Stacktrace: not available\n";
+			}
+			else {
+				stream << "[" << (i+1) << "] Stacktrace: " << entries[i].stacktrace << "\n";
+			}
 		}
 
 		if(i+1 < entries.size()) {
@@ -78,18 +83,22 @@ void ExceptionHandler::dump(esl::logging::StreamReal& stream, esl::logging::Loca
 			}
 		}
 
-		if(!entries[i].fileMessage.empty()) {
-			stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] File     : " << entries[i].fileMessage;
-			if(entries[i].fileMessage.at(entries[i].fileMessage.size()-1) != '\n') {
-				stream(location.object, location.function, location.file, location.line) << "\n";
+		if(showFilePosition) {
+			if(entries[i].fileMessage.empty()) {
+				stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] File     : not available\n";
+			}
+			else {
+				stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] File     : " << entries[i].fileMessage << "\n";
 			}
 		}
 
-		if(entries[i].stacktrace.empty()) {
-			stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] Stacktrace: not available\n";
-		}
-		else {
-			stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] Stacktrace:" << entries[i].stacktrace << "\n";
+		if(showStacktrace) {
+			if(entries[i].stacktrace.empty()) {
+				stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] Stacktrace: not available\n";
+			}
+			else {
+				stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] Stacktrace:" << entries[i].stacktrace << "\n";
+			}
 		}
 
 		if(i+1 < entries.size()) {
@@ -224,17 +233,18 @@ void ExceptionHandler::initialize(std::exception_ptr exceptionPointer) {
 	}
 }
 
-void ExceptionHandler::addEntry(const std::exception& e, const std::string& exceptionType, const char* what, const std::string& details) {
+template<typename E>
+void ExceptionHandler::addEntry(const E& e, const std::string& exceptionType, const char* what, const std::string& details) {
 	Entry entry;
 
 	entry.exceptionType = exceptionType;
 	entry.what = what;
 	entry.details = details;
 	if(showStacktrace) {
-		entry.stacktrace = createStackstrace(esl::system::Stacktrace::get(e));
+		entry.stacktrace = createStackstraceMessage(esl::system::Stacktrace::get(e));
 	}
 	if(showFilePosition) {
-		entry.fileMessage = createFileMessage(esl::io::FilePosition::get(e));
+		entry.fileMessage = createFilePositionMessage(esl::io::FilePosition::get(e));
 	}
 
 	entries.push_back(std::move(entry));

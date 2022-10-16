@@ -8,8 +8,9 @@
 #include <esl/logging/Logging.h>
 #include <esl/utility/String.h>
 
-#include <stdexcept>
+#include <exception>
 #include <sstream>
+#include <stdexcept>
 
 namespace common4esl {
 namespace processing {
@@ -122,38 +123,48 @@ void Context::procedureRun(esl::object::Context& context) {
 		initializeContext(*this);
 	}
 
-	if(!exceptionHandler) {
-		for(auto& entry : entries) {
+	for(auto& entry : entries) {
+		if(!exceptionHandler) {
 			entry->procedureRun(context);
 			continue;
 		}
-		return;
-	}
 
-	for(auto& entry : entries) {
 		try {
 			entry->procedureRun(context);
 		}
 		catch(...) {
-			esl::object::Value<std::exception_ptr>* exceptionObjectPtr;
-			{
-				esl::object::Object* objectPtr = context.findObject<esl::object::Object>("exception");
+			esl::object::Object* object = context.findObject<esl::object::Object>("exception");
+			esl::object::Value<std::exception_ptr>* exceptionObjectPtr = nullptr;
 
-				if(objectPtr) {
-					exceptionObjectPtr = dynamic_cast<esl::object::Value<std::exception_ptr>*>(objectPtr);
-				}
-				else {
-					context.addObject("exception", std::unique_ptr<esl::object::Value<std::exception_ptr>>(new esl::object::Value<std::exception_ptr>(std::current_exception())));
-					exceptionObjectPtr = context.findObject<esl::object::Value<std::exception_ptr>>("exception");
+			if(object) {
+				exceptionObjectPtr = dynamic_cast<esl::object::Value<std::exception_ptr>*>(object);
+				if(!exceptionObjectPtr) {
+					logger.warn << "Object with id \"exception\" is not Value<std::exception_ptr>\n";
 				}
 			}
-
-			if(exceptionObjectPtr) {
-				exceptionHandler->procedureRun(context);
-				if(**exceptionObjectPtr) {
-					break;
-				}
+			else {
+				context.addObject("exception", std::unique_ptr<esl::object::Value<std::exception_ptr>>(new esl::object::Value<std::exception_ptr>(std::current_exception())));
+				exceptionObjectPtr = context.findObject<esl::object::Value<std::exception_ptr>>("exception");
 			}
+
+			exceptionHandler->procedureRun(context);
+
+			if(exceptionObjectPtr && **exceptionObjectPtr) {
+				break;
+			}
+		}
+	}
+
+	/* check if there is a return-code available */
+	esl::object::Object* returnCodeObject = context.findObject<esl::object::Object>("return-code");
+	if(returnCodeObject) {
+		esl::object::Value<int>* returnCodeInt = dynamic_cast<esl::object::Value<int>*>(returnCodeObject);
+		if(returnCodeInt) {
+			returnCode = **returnCodeInt;
+			logger.trace << "Found object \"return-code\" has integer value " << returnCode << "\n";
+		}
+		else {
+			logger.warn << "Object with id \"return-code\" is not Value<int>\n";
 		}
 	}
 }

@@ -62,7 +62,6 @@ esl::object::Context* TaskBinding::getContext() const {
 
 std::exception_ptr TaskBinding::getException() const {
 	return exceptionPtr;
-
 }
 
 void TaskBinding::setStatus(esl::processing::Status aStatus) {

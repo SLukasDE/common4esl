@@ -7,6 +7,7 @@
 
 #include <exception>
 #include <sstream>
+#include <stdexcept>
 
 namespace common4esl {
 namespace processing {
@@ -98,13 +99,13 @@ ExceptionHandler::ExceptionHandler(const std::vector<std::pair<std::string, std:
 }
 
 void ExceptionHandler::procedureRun(esl::object::Context& context) {
-	esl::object::Value<std::exception_ptr>* exceptionObjectPtr = context.findObject<esl::object::Value<std::exception_ptr>>("exception");
-	if(!exceptionObjectPtr || !**exceptionObjectPtr) {
+	esl::object::Value<std::exception_ptr>* exceptionPointer = context.findObject<esl::object::Value<std::exception_ptr>>("exception");
+	if(!exceptionPointer || !**exceptionPointer) {
 		return;
 	}
 
 	if(showOutput) {
-		common4esl::ExceptionHandler exceptionHandler(**exceptionObjectPtr, showStacktrace, false);
+		common4esl::ExceptionHandler exceptionHandler(**exceptionPointer, showStacktrace, false);
 
 		if(showOutput->ostream) {
 			if(esl::logging::Logging::get()) {
@@ -126,10 +127,10 @@ void ExceptionHandler::procedureRun(esl::object::Context& context) {
 
 	switch(handleException) {
 	case rethrow:
-		std::rethrow_exception(**exceptionObjectPtr);
+		std::rethrow_exception(**exceptionPointer);
 		break;
 	case ignore:
-		**exceptionObjectPtr = nullptr;
+		**exceptionPointer = nullptr;
 		break;
 	case stop:
 		break;
