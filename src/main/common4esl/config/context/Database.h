@@ -3,7 +3,7 @@
 
 #include <common4esl/config/Config.h>
 #include <common4esl/config/Setting.h>
-#include <common4esl/processing/Context.h>
+#include <common4esl/object/ProcessingContext.h>
 
 #include <esl/object/Object.h>
 
@@ -15,6 +15,7 @@
 #include <vector>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 namespace context {
 
@@ -23,7 +24,7 @@ public:
 	Database(const std::string& fileName, const tinyxml2::XMLElement& element);
 
 	void save(std::ostream& oStream, std::size_t spaces) const;
-	void install(processing::Context& context) const;
+	void install(object::ProcessingContext& context) const;
 
 private:
 	std::string id;
@@ -37,6 +38,7 @@ private:
 
 } /* namespace context */
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_CONFIG_CONTEXT_DATABASE_H_ */

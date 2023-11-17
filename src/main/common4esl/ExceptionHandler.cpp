@@ -3,6 +3,7 @@
 
 #include <esl/com/http/server/exception/StatusCode.h>
 #include <esl/database/exception/SqlError.h>
+#include <esl/database/Diagnostics.h>
 #include <esl/io/FilePosition.h>
 #include <esl/plugin/exception/PluginNotFound.h>
 #include <esl/plugin/Registry.h>
@@ -14,6 +15,7 @@
 #include <stdexcept>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace {
 std::string createFilePositionMessage(const esl::io::FilePosition* filePosition) {
 	return filePosition ? "file \"" + filePosition->getFileName() + "\", line " + std::to_string(filePosition->getLineNo()) : "";
@@ -71,7 +73,7 @@ void ExceptionHandler::dump(std::ostream& stream) const {
 	}
 }
 
-void ExceptionHandler::dump(esl::logging::StreamReal& stream, esl::logging::Location location) const {
+void ExceptionHandler::dump(esl::logging::Streams::Real& stream, esl::logging::Streams::Location location) const {
 	for(std::size_t i=0; i<entries.size(); ++i) {
 		stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] Exception : " << entries[i].exceptionType << "\n";
 		stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] What      : " << entries[i].what << "\n";
@@ -250,4 +252,5 @@ void ExceptionHandler::addEntry(const E& e, const std::string& exceptionType, co
 	entries.push_back(std::move(entry));
 }
 
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

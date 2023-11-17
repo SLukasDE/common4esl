@@ -2,9 +2,10 @@
 #define COMMON4ESL_LOGGING_OSTREAMAPPENDER_H_
 
 #include <esl/logging/Appender.h>
+#include <esl/logging/OStreamAppender.h>
+
 #include <esl/logging/Layout.h>
-#include <esl/logging/Level.h>
-#include <esl/logging/Location.h>
+#include <esl/logging/Streams.h>
 
 #include <memory>
 #include <ostream>
@@ -13,13 +14,12 @@
 #include <vector>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace logging {
 
 class OStreamAppender : public esl::logging::Appender {
 public:
-	static std::unique_ptr<esl::logging::Appender> create(const std::vector<std::pair<std::string, std::string>>& settings);
-
-	OStreamAppender(const std::vector<std::pair<std::string, std::string>>& settings);
+	OStreamAppender(const esl::logging::OStreamAppender::Settings& settings);
 
 	void setLayout(const esl::logging::Layout* aLayout) override;
 	const esl::logging::Layout* getLayout() const override;
@@ -30,29 +30,21 @@ public:
 
 	void flush(std::ostream*) override;
 
-	void write(const esl::logging::Location& location, const char* ptr, std::size_t size) override;
-
-	struct OStreams {
-		OStreams(std::ostream& trace, std::ostream& debug, std::ostream& info, std::ostream& warn, std::ostream& error);
-		std::ostream& trace;
-		std::ostream& debug;
-		std::ostream& info;
-		std::ostream& warn;
-		std::ostream& error;
-	};
+	void write(const esl::logging::Streams::Location& location, const char* ptr, std::size_t size) override;
 
 private:
 	const esl::logging::Layout* layout = nullptr;
 	esl::logging::Appender::RecordLevel recordLevel = RecordLevel::SELECTED;
 
 	bool isFirstCharacterInLine = true;
-	esl::logging::Location lastLocation;
-	OStreams oStreams;
+	esl::logging::Streams::Location lastLocation;
+    const esl::logging::OStreamAppender::Settings settings;
 
-	std::ostream& getOStream(esl::logging::Level level);
+	std::ostream& getOStream(esl::logging::Streams::Level level);
 };
 
 } /* namespace logging */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_LOGGING_OSTREAMAPPENDER_H_ */

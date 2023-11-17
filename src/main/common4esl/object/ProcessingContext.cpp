@@ -1,80 +1,76 @@
+#include <common4esl/object/ProcessingContext.h>
 #include <common4esl/config/context/Context.h>
-#include <common4esl/Logger.h>
-//#include <common4esl/processing/ExceptionHandler.h>
-#include <common4esl/processing/Context.h>
 
 #include <esl/com/http/server/exception/StatusCode.h>
 #include <esl/database/exception/SqlError.h>
+#include <esl/Logger.h>
 #include <esl/logging/Logging.h>
-#include <esl/utility/String.h>
+#include <esl/object/Value.h>
 
 #include <exception>
 #include <sstream>
 #include <stdexcept>
 
 namespace common4esl {
-namespace processing {
+inline namespace v1_6 {
+namespace object {
 
 namespace {
-Logger logger("common4esl::processing::Context");
+esl::Logger logger("common4esl::object::ProcessingContext");
 } /* anonymous namespace */
 
-Context::IdElement::IdElement(std::unique_ptr<esl::object::Object> aObject)
+ProcessingContext::IdElement::IdElement(std::unique_ptr<esl::object::Object> aObject)
 : object(std::move(aObject)),
   refObject(*object),
   initializeContext(dynamic_cast<esl::object::InitializeContext*>(&refObject))
 { }
 
-Context::IdElement::IdElement(esl::object::Object& refObject)
+ProcessingContext::IdElement::IdElement(esl::object::Object& refObject)
 : refObject(refObject),
   initializeContext(nullptr)
 { }
 
-std::unique_ptr<esl::processing::Context> Context::create(const std::vector<std::pair<std::string, std::string>>& settings) {
-	return std::unique_ptr<esl::processing::Context>(new Context(settings));
+ProcessingContext::ProcessingContext(const esl::object::SimpleProcessingContext::Settings& aSettings)
+: settings(aSettings)
+{ }
+
+void ProcessingContext::setParentObjectContext(esl::object::Context*) {
 }
 
-Context::Context(const std::vector<std::pair<std::string, std::string>>& settings) {
-	for(const auto& setting : settings) {
-		if(setting.first == "exception-handler") {
-			if(!exceptionHandlerId.empty()) {
-		        throw std::runtime_error("multiple definition of attribute 'exception-handler'.");
-			}
-			exceptionHandlerId = setting.second;
-			if(exceptionHandlerId.empty()) {
-		    	throw std::runtime_error("Invalid value \"\" for attribute 'exception-handler'");
-			}
-
-		}
-		else {
-            throw std::runtime_error("unknown attribute '\"" + setting.first + "\"'.");
-		}
-    }
-}
-
-void Context::setParent(Context* parentContext) {
+void ProcessingContext::setParent(Context* parentContext) {
 	parent = parentContext;
 }
 
-esl::processing::Context& Context::addData(const std::string& configuration) {
+void ProcessingContext::addObject(const std::string& id, std::unique_ptr<esl::object::Object> object) {
+	ProcessingContext* context = dynamic_cast<ProcessingContext*>(object.get());
+
+	if(id.empty()) {
+		entries.push_back(std::unique_ptr<ProcessingContextEntry>(new ProcessingContextEntry(std::move(object))));
+	}
+	else if(objects.insert(std::make_pair(id, IdElement(std::move(object)))).second == false) {
+        throw std::runtime_error("Cannot add object with id '" + id + "' because there exists already an object with same id.");
+	}
+
+	if(context) {
+		context->setParent(this);
+	}
+}
+
+void ProcessingContext::addData(const std::string& configuration) {
 	config::context::Context config(configuration);
 
 	config.loadLibraries();
 	config.install(*this);
-
-	return *this;
 }
 
-esl::processing::Context& Context::addFile(const boost::filesystem::path& filename) {
+void ProcessingContext::addFile(const boost::filesystem::path& filename) {
 	config::context::Context config(filename);
 
 	config.loadLibraries();
 	config.install(*this);
-
-	return *this;
 }
 
-esl::processing::Context& Context::addReference(const std::string& destinationId, const std::string& sourceId) {
+void ProcessingContext::addAlias(const std::string& destinationId, const std::string& sourceId) {
 	esl::object::Object* object = findRawObject(sourceId);
 
 	if(object == nullptr) {
@@ -82,7 +78,7 @@ esl::processing::Context& Context::addReference(const std::string& destinationId
 	}
 
 	if(destinationId.empty()) {
-		entries.push_back(std::unique_ptr<ContextEntry>(new ContextEntry(*object)));
+		entries.push_back(std::unique_ptr<ProcessingContextEntry>(new ProcessingContextEntry(*object)));
 	}
 	else {
 		if(objects.count(destinationId) == 0) {
@@ -90,15 +86,13 @@ esl::processing::Context& Context::addReference(const std::string& destinationId
 		}
 		objects.insert(std::make_pair(destinationId, IdElement(*object)));
 	}
-
-	return *this;
 }
 
-int Context::getReturnCode() const {
+int ProcessingContext::getReturnCode() const {
 	return returnCode;
 }
 
-void Context::onEvent(const esl::object::Object& object) {
+void ProcessingContext::onEvent(const esl::object::Object& object) {
 	if(!isInitialized) {
 		initializeContext(*this);
 	}
@@ -108,7 +102,7 @@ void Context::onEvent(const esl::object::Object& object) {
 	}
 }
 
-std::set<std::string> Context::getObjectIds() const {
+std::set<std::string> ProcessingContext::getObjectIds() const {
 	std::set<std::string> rv;
 
 	for(const auto& object : objects) {
@@ -118,7 +112,7 @@ std::set<std::string> Context::getObjectIds() const {
 	return rv;
 }
 
-void Context::procedureRun(esl::object::Context& context) {
+void ProcessingContext::procedureRun(esl::object::Context& context) {
 	if(!isInitialized) {
 		initializeContext(*this);
 	}
@@ -169,10 +163,18 @@ void Context::procedureRun(esl::object::Context& context) {
 	}
 }
 
-void Context::initializeContext(esl::object::Context& context) {
+esl::io::Input ProcessingContext::accept(esl::com::common::server::RequestContext& requestContext) {
+	return esl::io::Input();
+}
+
+std::set<std::string> ProcessingContext::getNotifiers() const {
+	return {};
+}
+
+void ProcessingContext::initializeContext(esl::object::Context& context) {
 	isInitialized = true;
-	if(!exceptionHandlerId.empty()) {
-		exceptionHandler = &getObject<esl::processing::Procedure>(exceptionHandlerId);
+	if(!settings.exceptionHandlerId.empty()) {
+		exceptionHandler = &getObject<esl::object::Procedure>(settings.exceptionHandlerId);
 	}
 
 	for(auto& entry : entries) {
@@ -186,7 +188,7 @@ void Context::initializeContext(esl::object::Context& context) {
 	}
 }
 
-esl::object::Object* Context::findRawObject(const std::string& id) {
+esl::object::Object* ProcessingContext::findRawObject(const std::string& id) {
 	auto iter = objects.find(id);
 	esl::object::Object* object = iter == std::end(objects) ? nullptr : &iter->second.refObject;
 	if(object) {
@@ -198,7 +200,7 @@ esl::object::Object* Context::findRawObject(const std::string& id) {
 	return nullptr;
 }
 
-const esl::object::Object* Context::findRawObject(const std::string& id) const {
+const esl::object::Object* ProcessingContext::findRawObject(const std::string& id) const {
 	auto iter = objects.find(id);
 	esl::object::Object* object = iter == std::end(objects) ? nullptr : &iter->second.refObject;
 	if(object) {
@@ -210,20 +212,6 @@ const esl::object::Object* Context::findRawObject(const std::string& id) const {
 	return nullptr;
 }
 
-void Context::addRawObject(const std::string& id, std::unique_ptr<esl::object::Object> object) {
-	Context* context = dynamic_cast<Context*>(object.get());
-
-	if(id.empty()) {
-		entries.push_back(std::unique_ptr<ContextEntry>(new ContextEntry(std::move(object))));
-	}
-	else if(objects.insert(std::make_pair(id, IdElement(std::move(object)))).second == false) {
-        throw std::runtime_error("Cannot add object with id '" + id + "' because there exists already an object with same id.");
-	}
-
-	if(context) {
-		context->setParent(this);
-	}
-}
-
-} /* namespace processing */
+} /* namespace object */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

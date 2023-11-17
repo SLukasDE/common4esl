@@ -1,23 +1,25 @@
 #include <common4esl/config/context/Context.h>
 #include <common4esl/config/FilePosition.h>
-#include <common4esl/Logger.h>
-
 #include <common4esl/config/context/EntryImpl.h>
+
+#include <esl/Logger.h>
+
 
 #include <esl/plugin/Registry.h>
 #include <esl/plugin/exception/PluginNotFound.h>
-#include <esl/processing/Context.h>
-#include <esl/logging/Logger.h>
+#include <esl/object/ProcessingContext.h>
+//#include <esl/logging/Logger.h>
 
 #include <iostream>
 #include <stdexcept>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 namespace context {
 
 namespace {
-Logger logger("common4esl::config::context::Context");
+esl::Logger logger("common4esl::config::context::Context");
 } /* anonymous namespace */
 
 Context::Context(const std::string& fileName, const tinyxml2::XMLElement& element)
@@ -176,7 +178,7 @@ void Context::save(std::ostream& oStream, std::size_t spaces) const {
 	}
 }
 
-void Context::install(processing::Context& context) {
+void Context::install(object::ProcessingContext& context) {
 	if(isRoot) {
 		for(const auto& entry : entries) {
 			entry->install(context);
@@ -187,7 +189,7 @@ void Context::install(processing::Context& context) {
 			context.addObject(id, create());
 		}
 		else {
-			context.addReference(id, refId);
+			context.addAlias(id, refId);
 		}
 	}
 }
@@ -207,9 +209,9 @@ std::unique_ptr<esl::object::Object> Context::create() const {
 		eslSettings.push_back(std::make_pair(setting.key, evaluate(setting.value, setting.language)));
 	}
 
-	std::unique_ptr<esl::processing::Context> bootContext;
+	std::unique_ptr<esl::object::ProcessingContext> bootContext;
 	try {
-		bootContext = esl::plugin::Registry::get().create<esl::processing::Context>(implementation, eslSettings);
+		bootContext = esl::plugin::Registry::get().create<esl::object::ProcessingContext>(implementation, eslSettings);
 	}
 	catch(const esl::plugin::exception::PluginNotFound& e) {
 		throw FilePosition::add(*this, e);
@@ -378,4 +380,5 @@ void Context::parseLibrary(const tinyxml2::XMLElement& element) {
 
 } /* namespace context */
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

@@ -1,9 +1,7 @@
 #ifndef COMMON4ESL_EXCEPTIONHANDLER_H_
 #define COMMON4ESL_EXCEPTIONHANDLER_H_
 
-#include <esl/logging/StreamReal.h>
-#include <esl/logging/StreamEmpty.h>
-#include <esl/logging/Location.h>
+#include <esl/logging/Streams.h>
 
 #include <exception>
 #include <ostream>
@@ -11,14 +9,15 @@
 #include <vector>
 
 namespace common4esl {
+inline namespace v1_6 {
 
 class ExceptionHandler {
 public:
 	ExceptionHandler(std::exception_ptr exceptionPointer, bool showStacktrace, bool showFilePosition);
 
 	void dump(std::ostream& stream) const;
-	void dump(esl::logging::StreamReal& stream, esl::logging::Location location = esl::logging::Location{}) const;
-	inline void dump(esl::logging::StreamEmpty& stream, esl::logging::Location location = esl::logging::Location{}) const { };
+	void dump(esl::logging::Streams::Real& stream, esl::logging::Streams::Location location = esl::logging::Streams::Location{}) const;
+	inline void dump(esl::logging::Streams::Empty& stream, esl::logging::Streams::Location location = esl::logging::Streams::Location{}) const { };
 
 private:
 	void initialize(std::exception_ptr exceptionPointer);
@@ -39,6 +38,7 @@ private:
 	std::vector<Entry> entries;
 };
 
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_EXCEPTIONHANDLER_H_ */

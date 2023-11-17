@@ -1,22 +1,17 @@
-#include <common4esl/processing/TaskBinding.h>
-#include <common4esl/processing/TaskFactory.h>
-
 #include <common4esl/object/Context.h>
+#include <common4esl/system/TaskBinding.h>
+#include <common4esl/system/TaskFactory.h>
+
+#include <esl/object/Procedure.h>
 
 namespace common4esl {
-namespace processing {
+inline namespace v1_6 {
+namespace system {
 
-TaskBinding::TaskBinding(TaskFactory& aTaskFactory, esl::processing::TaskDescriptor aDescriptor)
+TaskBinding::TaskBinding(TaskFactory& aTaskFactory, esl::system::Task::Descriptor aDescriptor)
 : taskFactory(&aTaskFactory),
-  descriptor(std::move(aDescriptor)),
-  event(dynamic_cast<esl::object::Event*>(descriptor.procedure.get()))
+  descriptor(std::move(aDescriptor))
 { }
-
-void TaskBinding::sendEvent(const esl::object::Object& object) {
-	if(event) {
-		event->onEvent(object);
-	}
-}
 
 void TaskBinding::cancel() {
 	std::lock_guard<std::mutex> lockTaskFactory(taskFactoryMutex);
@@ -30,7 +25,7 @@ void TaskBinding::cancel() {
 		for(auto iter = taskFactory->queue.begin(); iter != taskFactory->queue.end(); ++iter) {
 			if(iter->first == this) {
 				taskFactory->queue.erase(iter);
-				setStatus(esl::processing::Status::canceled);
+				setStatus(esl::system::Task::Status::canceled);
 				return;
 			}
 		}
@@ -44,15 +39,15 @@ void TaskBinding::cancel() {
 	}
 }
 
-esl::processing::Status TaskBinding::getStatus() const {
+esl::system::Task::Status TaskBinding::getStatus() const {
 	return status.load();
 }
 
 esl::object::Context* TaskBinding::getContext() const {
 	switch(getStatus()) {
-	case esl::processing::Status::canceled:
-	case esl::processing::Status::exception:
-	case esl::processing::Status::done:
+	case esl::system::Task::Status::canceled:
+	case esl::system::Task::Status::exception:
+	case esl::system::Task::Status::done:
 		return descriptor.context.get();
 	default:
 		break;
@@ -64,12 +59,12 @@ std::exception_ptr TaskBinding::getException() const {
 	return exceptionPtr;
 }
 
-void TaskBinding::setStatus(esl::processing::Status aStatus) {
+void TaskBinding::setStatus(esl::system::Task::Status aStatus) {
 	if(status.exchange(aStatus) == aStatus) {
 		return;
 	}
 
-	if(aStatus == esl::processing::Status::canceled) {
+	if(aStatus == esl::system::Task::Status::canceled) {
 		std::lock_guard<std::mutex> lockTaskFactory(taskFactoryMutex);
 		taskFactory = nullptr;
 	}
@@ -81,19 +76,19 @@ void TaskBinding::setStatus(esl::processing::Status aStatus) {
 
 void TaskBinding::run() noexcept {
 	try {
-		setStatus(esl::processing::Status::running);
+		setStatus(esl::system::Task::Status::running);
 		if(!descriptor.context) {
-			descriptor.context.reset(new common4esl::object::Context);
+			descriptor.context.reset(new object::Context);
 		}
 		if(descriptor.procedure) {
 			descriptor.procedure->procedureRun(*descriptor.context);
 		}
-		setStatus(esl::processing::Status::done);
+		setStatus(esl::system::Task::Status::done);
 	}
 	catch(...) {
 		exceptionPtr = std::current_exception();
 		try {
-			setStatus(esl::processing::Status::exception);
+			setStatus(esl::system::Task::Status::exception);
 		} catch(...) { }
 	}
 
@@ -101,5 +96,6 @@ void TaskBinding::run() noexcept {
 	taskFactory = nullptr;
 }
 
-} /* namespace processing */
+} /* namespace system */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

@@ -1,27 +1,28 @@
-#include <common4esl/processing/Context.h>
-#include <common4esl/processing/ContextEntry.h>
+#include <common4esl/object/ProcessingContext.h>
+#include <common4esl/object/ProcessingContextEntry.h>
 
 namespace common4esl {
-namespace processing {
+inline namespace v1_6 {
+namespace object {
 
-ContextEntry::ContextEntry(std::unique_ptr<esl::object::Object> aObject)
+ProcessingContextEntry::ProcessingContextEntry(std::unique_ptr<esl::object::Object> aObject)
 : object(std::move(aObject)),
   refObject(*object),
   initializeContextPtr(dynamic_cast<esl::object::InitializeContext*>(object.get())),
   //context(dynamic_cast<IContext*>(object.get())),
   event(dynamic_cast<esl::object::Event*>(object.get())),
-  procedure(dynamic_cast<esl::processing::Procedure*>(&refObject))
+  procedure(dynamic_cast<esl::object::Procedure*>(&refObject))
 { }
 
-ContextEntry::ContextEntry(esl::object::Object& refObject)
+ProcessingContextEntry::ProcessingContextEntry(esl::object::Object& refObject)
 : refObject(refObject),
   initializeContextPtr(nullptr),
   event(dynamic_cast<esl::object::Event*>(&refObject)),
-  procedure(dynamic_cast<esl::processing::Procedure*>(&refObject))
+  procedure(dynamic_cast<esl::object::Procedure*>(&refObject))
 { }
 
 
-void ContextEntry::initializeContext(esl::object::Context& context) {
+void ProcessingContextEntry::initializeContext(esl::object::Context& context) {
 	if(initializeContextPtr) {
 		initializeContextPtr->initializeContext(context);
 		initializeContextPtr = nullptr;
@@ -34,13 +35,13 @@ void ContextEntry::initializeContext(esl::object::Context& context) {
 	*/
 }
 
-void ContextEntry::onEvent(const esl::object::Object& object) {
+void ProcessingContextEntry::onEvent(const esl::object::Object& object) {
 	if(event) {
 		event->onEvent(object);
 	}
 }
 
-void ContextEntry::procedureRun(esl::object::Context& context) {
+void ProcessingContextEntry::procedureRun(esl::object::Context& context) {
 	if(procedure) {
 		procedure->procedureRun(context);
 	}
@@ -52,11 +53,12 @@ void ContextEntry::procedureRun(esl::object::Context& context) {
 	*/
 }
 
-void ContextEntry::procedureCancel() {
+void ProcessingContextEntry::procedureCancel() {
 	if(procedure) {
 		procedure->procedureCancel();
 	}
 }
 
-} /* namespace processing */
+} /* namespace object */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

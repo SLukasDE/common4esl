@@ -23,58 +23,26 @@ SOFTWARE.
 #include <common4esl/logging/MemBufferAppender.h>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace logging {
 
 namespace {
-MemBufferAppender::Dimensions getDimensions(const std::vector<std::pair<std::string, std::string>>& settings) {
-	std::size_t maxColumns = 0;
-	bool maxColumnsDefined = false;
-
-	std::size_t maxRows;
-	bool maxRowsDefined = false;
-
-	for(auto const& setting : settings) {
-		if(setting.first == "max-lines") {
-			if(maxRowsDefined) {
-				throw std::runtime_error("Multiple definition of parameter key \"max-rows\" for MemBuffer appender");
-			}
-			maxRowsDefined = true;
-			maxRows = static_cast<std::size_t>(std::stoi(setting.second));
-		}
-		else if(setting.first == "max-columns") {
-			if(maxColumnsDefined) {
-				throw std::runtime_error("Multiple definition of parameter key \"max-rows\" for MemBuffer appender");
-			}
-			maxColumnsDefined = true;
-			maxColumns = static_cast<std::size_t>(std::stoi(setting.second));
-		}
-		else {
-			throw std::runtime_error("Invalid parameter key \"" + setting.first + "\" for MemBuffer appender");
-		}
-	}
-
-	if(!maxRowsDefined) {
-		throw std::runtime_error("Missing definition of parameter key \"max-rows\" for MemBuffer appender");
-	}
-
-	return MemBufferAppender::Dimensions(maxRows + 1, maxColumns);
+bool equal(const esl::logging::Streams::Location& location1, const esl::logging::Streams::Location& location2) {
+	return location1.level == location2.level &&
+			location1.object == location2.object &&
+			location1.typeName == location2.typeName &&
+			location1.function == location2.function &&
+			location1.file == location2.file &&
+			location1.threadId == location2.threadId;
+}
 }
 
+MemBufferAppender::MemBufferAppender(esl::logging::MemBufferAppender::Settings aSettings)
+: settings(aSettings),
+  entries(settings.maxLines+1, settings.maxColumns)
+{
+
 }
-
-MemBufferAppender::Dimensions::Dimensions(const std::size_t aRows, const std::size_t aColumns)
-: rows(aRows),
-  columns(aColumns)
-{ }
-
-std::unique_ptr<esl::logging::Appender> MemBufferAppender::create(const std::vector<std::pair<std::string, std::string>>& settings) {
-	return std::unique_ptr<esl::logging::Appender>(new MemBufferAppender(settings));
-}
-
-MemBufferAppender::MemBufferAppender(const std::vector<std::pair<std::string, std::string>>& settings)
-: dimensions(getDimensions(settings)),
-  entries(dimensions.rows, (dimensions.columns > 0 ? dimensions.columns : 0))
-{ }
 
 void MemBufferAppender::setLayout(const esl::logging::Layout* aLayout) {
 	layout = aLayout;
@@ -98,15 +66,15 @@ void MemBufferAppender::flush(std::ostream* oStream) {
 		return;
 	}
 
-	std::vector<std::tuple<esl::logging::Location, std::string>> buffer;
+	std::vector<std::tuple<esl::logging::Streams::Location, std::string>> buffer;
 
-	if(dimensions.columns > 0) {
-		for(std::size_t tmpIdxCons = rowConsumer; tmpIdxCons != rowProducer; tmpIdxCons = (tmpIdxCons + 1) % dimensions.rows) {
+	if(settings.maxColumns > 0) {
+		for(std::size_t tmpIdxCons = rowConsumer; tmpIdxCons != rowProducer; tmpIdxCons = (tmpIdxCons + 1) % (settings.maxLines+1)) {
 			buffer.push_back(std::make_tuple(entries[tmpIdxCons].location, std::string(&entries[tmpIdxCons].lineStaticSize[0])));
 		}
 	}
 	else {
-		for(std::size_t tmpIdxCons = rowConsumer; tmpIdxCons != rowProducer; tmpIdxCons = (tmpIdxCons + 1) % dimensions.rows) {
+		for(std::size_t tmpIdxCons = rowConsumer; tmpIdxCons != rowProducer; tmpIdxCons = (tmpIdxCons + 1) % (settings.maxLines+1)) {
 			buffer.push_back(std::make_tuple(entries[tmpIdxCons].location, entries[tmpIdxCons].lineDynamicSize));
 		}
 	}
@@ -123,7 +91,7 @@ void MemBufferAppender::flush(std::ostream* oStream) {
     }
 }
 
-void MemBufferAppender::write(const esl::logging::Location& location, const char* str, std::size_t len) {
+void MemBufferAppender::write(const esl::logging::Streams::Location& location, const char* str, std::size_t len) {
 	switch(getRecordLevel()) {
 	case RecordLevel::OFF:
 		return;
@@ -136,7 +104,7 @@ void MemBufferAppender::write(const esl::logging::Location& location, const char
 		break;
 	}
 
-	if(entries[rowProducer].location != location) {
+	if(!equal(entries[rowProducer].location, location)) {
 		if(columnsProducer > 0) {
 			newline();
 		}
@@ -162,23 +130,23 @@ void MemBufferAppender::write(const esl::logging::Location& location, const char
 }
 
 void MemBufferAppender::write(const char* ptr, std::size_t size) {
-    if(dimensions.columns == 0) {
+    if(settings.maxColumns == 0) {
     	entries[rowProducer].lineDynamicSize += std::string(ptr, size);
         columnsProducer += size;
     }
     else {
-        std::strncat(&entries[rowProducer].lineStaticSize[columnsProducer], ptr, std::min(size, dimensions.columns - columnsProducer));
-        columnsProducer += std::min(size, dimensions.columns - columnsProducer);
+        std::strncat(&entries[rowProducer].lineStaticSize[columnsProducer], ptr, std::min(size, settings.maxColumns - columnsProducer));
+        columnsProducer += std::min(size, settings.maxColumns - columnsProducer);
     }
 }
 
 void MemBufferAppender::newline() {
-    rowProducer = (rowProducer + 1) % dimensions.rows;
+    rowProducer = (rowProducer + 1) % (settings.maxLines + 1);
     if(rowConsumer == rowProducer) {
-        rowConsumer = (rowConsumer + 1) % dimensions.rows;
+        rowConsumer = (rowConsumer + 1) % (settings.maxLines + 1);
     }
 
-    if(dimensions.columns == 0) {
+    if(settings.maxColumns == 0) {
     	entries[rowProducer].lineDynamicSize.clear();
     }
     else {
@@ -188,4 +156,5 @@ void MemBufferAppender::newline() {
 }
 
 } /* namespace logging */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

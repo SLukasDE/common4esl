@@ -8,6 +8,7 @@
 #include <utility>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 namespace context {
 
@@ -113,12 +114,12 @@ void BasicServer::save(std::ostream& oStream, std::size_t spaces) const {
 }
 
 
-void BasicServer::install(processing::Context& context) const {
+void BasicServer::install(object::ProcessingContext& context) const {
 	if(refId.empty()) {
 		context.addObject(id, create());
 	}
 	else {
-		context.addReference(id, refId);
+		context.addAlias(id, refId);
 
 		if(context.findObject<esl::com::basic::server::Socket>(refId) == nullptr) {
 			if(id.empty()) {
@@ -178,4 +179,5 @@ void BasicServer::parseInnerElement(const tinyxml2::XMLElement& element) {
 
 } /* namespace context */
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

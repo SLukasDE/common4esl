@@ -4,6 +4,7 @@
 #include <string>
 
 namespace common4esl {
+inline namespace v1_6 {
 
 struct HttpStatusCode final {
 	HttpStatusCode() = delete;
@@ -11,6 +12,7 @@ struct HttpStatusCode final {
 	static std::string getMessage(short int statusCode);
 };
 
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_HTTPSTATUSCODE_H_ */

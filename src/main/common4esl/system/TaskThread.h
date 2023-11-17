@@ -1,11 +1,12 @@
-#ifndef COMMON4ESL_PROCESSING_TASKTHREAD_H_
-#define COMMON4ESL_PROCESSING_TASKTHREAD_H_
+#ifndef COMMON4ESL_SYSTEM_TASKTHREAD_H_
+#define COMMON4ESL_SYSTEM_TASKTHREAD_H_
 
 #include <mutex>
 #include <thread>
 
 namespace common4esl {
-namespace processing {
+inline namespace v1_6 {
+namespace system {
 
 class TaskFactory;
 
@@ -22,7 +23,8 @@ private:
 	static void run(TaskFactory& taskFactory);
 };
 
-} /* namespace processing */
+} /* namespace system */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
-#endif /* COMMON4ESL_PROCESSING_TASKTHREAD_H_ */
+#endif /* COMMON4ESL_SYSTEM_TASKTHREAD_H_ */

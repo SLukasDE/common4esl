@@ -10,6 +10,7 @@
 #include <string>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 
 class FilePosition final {
@@ -30,6 +31,7 @@ esl::io::FilePosition::Injector<E> FilePosition::add(const Config& config, const
 }
 
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_CONFIG_FILEPOSITION_H_ */

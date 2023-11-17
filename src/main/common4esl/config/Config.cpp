@@ -1,15 +1,17 @@
 #include <common4esl/config/Config.h>
 #include <common4esl/config/FilePosition.h>
-#include <common4esl/Logger.h>
+
+#include <esl/Logger.h>
 
 #include <cstdlib>
 
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 
 namespace {
-Logger logger("common4esl::config::Config");
+esl::Logger logger("common4esl::config::Config");
 } /* anonymous namespace */
 
 Config::Config(const std::string& aFileName)
@@ -150,4 +152,5 @@ bool Config::stringToBool(bool& b, std::string str) {
 }
 
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

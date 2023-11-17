@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 
 namespace {
@@ -69,4 +70,5 @@ esl::io::FilePosition::Injector<std::runtime_error> FilePosition::add(const Conf
 }
 
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

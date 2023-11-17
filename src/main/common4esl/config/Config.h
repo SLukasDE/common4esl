@@ -7,6 +7,7 @@
 #include <utility>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 
 class Config {
@@ -36,6 +37,7 @@ private:
 };
 
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_CONFIG_CONFIG_H_ */

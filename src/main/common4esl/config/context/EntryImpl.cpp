@@ -2,6 +2,7 @@
 #include <common4esl/config/FilePosition.h>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 namespace context {
 
@@ -64,7 +65,7 @@ void EntryImpl::save(std::ostream& oStream, std::size_t spaces) const {
 	}
 }
 
-void EntryImpl::install(processing::Context& context) const {
+void EntryImpl::install(object::ProcessingContext& context) const {
 	if(basicClient) {
 		basicClient->install(context);
 	}
@@ -90,4 +91,5 @@ void EntryImpl::install(processing::Context& context) const {
 
 } /* namespace context */
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

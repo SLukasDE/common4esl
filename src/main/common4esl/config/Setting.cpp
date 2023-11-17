@@ -2,6 +2,7 @@
 #include <common4esl/config/FilePosition.h>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 
 Setting::Setting(const std::string& fileName, const tinyxml2::XMLElement& element, bool allowLanguage)
@@ -55,4 +56,5 @@ void Setting::saveParameter(std::ostream& oStream, std::size_t spaces) const {
 }
 
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

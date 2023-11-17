@@ -1,16 +1,18 @@
-#include <common4esl/Logger.h>
-#include <common4esl/processing/TaskBinding.h>
-#include <common4esl/processing/TaskFactory.h>
-#include <common4esl/processing/TaskThread.h>
+#include <common4esl/system/TaskBinding.h>
+#include <common4esl/system/TaskFactory.h>
+#include <common4esl/system/TaskThread.h>
+
+#include <esl/Logger.h>
 
 #include <chrono>
 #include <memory>
 #include <thread>
 
 namespace common4esl {
-namespace processing {
+inline namespace v1_6 {
+namespace system {
 namespace {
-Logger logger("common4esl::processing::TaskThread");
+esl::Logger logger("common4esl::system::TaskThread");
 }
 
 void TaskThread::create(TaskFactory& taskFactory) {
@@ -43,7 +45,7 @@ TaskThread::TaskThread(TaskFactory& aTaskFactory)
 			return !taskFactory.queue.empty();
 		}()) {
 			TaskBinding* bindingPtr;
-			std::shared_ptr<esl::processing::Task::Binding> binding;
+			std::shared_ptr<esl::system::Task::Binding> binding;
 
 			logger.trace << "Thread " << std::hash<std::thread::id>{}(std::this_thread::get_id()) << ": fetch binding from queue...\n";
 
@@ -103,5 +105,6 @@ void TaskThread::run(TaskFactory& taskFactory) {
 	TaskThread thread(taskFactory);
 }
 
-} /* namespace processing */
+} /* namespace system */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

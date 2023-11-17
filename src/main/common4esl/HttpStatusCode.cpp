@@ -3,6 +3,7 @@
 #include <map>
 
 namespace common4esl {
+inline namespace v1_6 {
 
 namespace {
 std::map<short int, std::string> statusCodeMessages = {
@@ -82,4 +83,5 @@ std::string HttpStatusCode::getMessage(short int statusCode) {
 	return "";
 }
 
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

@@ -1,7 +1,6 @@
 #ifndef COMMON4ESL_CONFIG_CONTEXT_ENTRYIMPL_H_
 #define COMMON4ESL_CONFIG_CONTEXT_ENTRYIMPL_H_
 
-#include <common4esl/processing/Context.h>
 #include <common4esl/config/Config.h>
 #include <common4esl/config/context/BasicClient.h>
 #include <common4esl/config/context/BasicServer.h>
@@ -11,6 +10,7 @@
 #include <common4esl/config/context/HttpServer.h>
 #include <common4esl/config/context/Object.h>
 #include <common4esl/config/context/Procedure.h>
+#include <common4esl/object/ProcessingContext.h>
 
 #include <memory>
 #include <ostream>
@@ -18,6 +18,7 @@
 #include <tinyxml2/tinyxml2.h>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 namespace context {
 
@@ -26,7 +27,7 @@ public:
 	EntryImpl(const std::string& fileName, const tinyxml2::XMLElement& element);
 
 	void save(std::ostream& oStream, std::size_t spaces) const override;
-	void install(processing::Context& context) const override;
+	void install(object::ProcessingContext& context) const override;
 
 private:
 	std::unique_ptr<Object> object;
@@ -43,6 +44,7 @@ private:
 
 } /* namespace context */
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_CONFIG_CONTEXT_ENTRYIMPL_H_ */

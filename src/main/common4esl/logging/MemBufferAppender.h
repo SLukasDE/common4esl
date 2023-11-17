@@ -2,8 +2,10 @@
 #define COMMON4ESL_LOGGING_MEMBUFFERAPPENDER_H_
 
 #include <esl/logging/Appender.h>
+#include <esl/logging/MemBufferAppender.h>
+
 #include <esl/logging/Layout.h>
-#include <esl/logging/Location.h>
+#include <esl/logging/Streams.h>
 
 #include <memory>
 #include <ostream>
@@ -12,13 +14,12 @@
 #include <vector>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace logging {
 
 class MemBufferAppender: public esl::logging::Appender {
 public:
-	static std::unique_ptr<esl::logging::Appender> create(const std::vector<std::pair<std::string, std::string>>& settings);
-
-	MemBufferAppender(const std::vector<std::pair<std::string, std::string>>& settings);
+	MemBufferAppender(esl::logging::MemBufferAppender::Settings settings);
 
 	void setLayout(const esl::logging::Layout* aLayout) override;
 	const esl::logging::Layout* getLayout() const override;
@@ -31,14 +32,7 @@ public:
 	/* method is (currently) NOT thread-safe, but could be const */
 	void flush(std::ostream* oStream) override;
 
-	void write(const esl::logging::Location& location, const char* ptr, std::size_t size) override;
-
-	struct Dimensions {
-		Dimensions(const std::size_t rows, const std::size_t columns);
-
-		std::size_t rows;
-		std::size_t columns;
-	};
+	void write(const esl::logging::Streams::Location& location, const char* ptr, std::size_t size) override;
 
 private:
 	const esl::logging::Layout* layout = nullptr;
@@ -49,12 +43,12 @@ private:
     	Entry(std::size_t maxColumns)
     	: lineStaticSize((maxColumns > 0 ? maxColumns+1 : 0), 0)
     	{ }
-    	esl::logging::Location location;
+    	esl::logging::Streams::Location location;
     	LineBuffer lineStaticSize;
     	std::string lineDynamicSize;
     };
 
-    const Dimensions dimensions;
+    const esl::logging::MemBufferAppender::Settings settings;
     std::vector<Entry> entries;
 
 	std::size_t rowProducer = 0;
@@ -66,6 +60,7 @@ private:
 };
 
 } /* namespace logging */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
 
 #endif /* COMMON4ESL_LOGGING_MEMBUFFERAPPENDER_H_ */

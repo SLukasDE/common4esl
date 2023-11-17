@@ -1,11 +1,12 @@
 #include <common4esl/config/context/Procedure.h>
 #include <common4esl/config/FilePosition.h>
 
-#include <esl/processing/Procedure.h>
+#include <esl/object/Procedure.h>
 #include <esl/plugin/exception/PluginNotFound.h>
 #include <esl/plugin/Registry.h>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace config {
 namespace context {
 
@@ -107,14 +108,14 @@ void Procedure::save(std::ostream& oStream, std::size_t spaces) const {
 	}
 }
 
-void Procedure::install(processing::Context& context) const {
+void Procedure::install(object::ProcessingContext& context) const {
 	if(refId.empty()) {
 		context.addObject(id, create());
 	}
 	else {
-		context.addReference(id, refId);
+		context.addAlias(id, refId);
 
-		if(context.findObject<esl::processing::Procedure>(refId) == nullptr) {
+		if(context.findObject<esl::object::Procedure>(refId) == nullptr) {
 			if(id.empty()) {
 				throw FilePosition::add(*this, "Could not add procedure reference, because referenced object with id '" + refId + "' is not a procedure.");
 			}
@@ -131,9 +132,9 @@ std::unique_ptr<esl::object::Object> Procedure::create() const {
 		eslSettings.push_back(std::make_pair(setting.key, evaluate(setting.value, setting.language)));
 	}
 
-	std::unique_ptr<esl::processing::Procedure> procedure;
+	std::unique_ptr<esl::object::Procedure> procedure;
 	try {
-		procedure = esl::plugin::Registry::get().create<esl::processing::Procedure>(implementation, eslSettings);
+		procedure = esl::plugin::Registry::get().create<esl::object::Procedure>(implementation, eslSettings);
 	}
 	catch(const esl::plugin::exception::PluginNotFound& e) {
 		throw FilePosition::add(*this, e);
@@ -172,4 +173,5 @@ void Procedure::parseInnerElement(const tinyxml2::XMLElement& element) {
 
 } /* namespace context */
 } /* namespace config */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */

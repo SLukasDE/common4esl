@@ -1,9 +1,10 @@
 #include <common4esl/logging/DefaultLayout.h>
 
-#include <esl/logging/Logging.h>
-#include <esl/logging/Level.h>
-#include <esl/system/Stacktrace.h>
 #include <esl/utility/String.h>
+
+#include <esl/logging/Logging.h>
+#include <esl/plugin/Registry.h>
+#include <esl/system/Stacktrace.h>
 
 #include <chrono>
 #include <ctime>
@@ -12,6 +13,7 @@
 #include <time.h>
 
 namespace common4esl {
+inline namespace v1_6 {
 namespace logging {
 
 namespace {
@@ -61,17 +63,17 @@ std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_cl
 	return formatTimestamp(timestamp);
 }
 
-std::string formatLevel(esl::logging::Level level) {
+std::string formatLevel(esl::logging::Streams::Level level) {
     switch(level) {
-    case esl::logging::Level::TRACE:
+    case esl::logging::Streams::Level::TRACE:
     	return "[TRACE] ";
-    case esl::logging::Level::DEBUG:
+    case esl::logging::Streams::Level::DEBUG:
     	return "[DEBUG] ";
-    case esl::logging::Level::INFO:
+    case esl::logging::Streams::Level::INFO:
     	return "[INFO ] ";
-    case esl::logging::Level::WARN:
+    case esl::logging::Streams::Level::WARN:
     	return"[WARN ] ";
-    case esl::logging::Level::ERROR:
+    case esl::logging::Streams::Level::ERROR:
     	return "[ERROR] ";
     default:
         break;
@@ -97,124 +99,45 @@ std::string formatLineNo(unsigned int lineNo) {
 	return formatStrToSize(std::to_string(lineNo),true, 6);
 }
 
-bool convertValueToBool(const std::string& value) {
-	std::string normalized = esl::utility::String::toUpper(esl::utility::String::trim(value));
-	return (normalized != "" && normalized != "0" && normalized != "NO" && normalized != "FALSE");
-}
-
 } /* anonymous namespace */
 
-std::unique_ptr<esl::logging::Layout> DefaultLayout::create(const std::vector<std::pair<std::string, std::string>>& values) {
-	return std::unique_ptr<esl::logging::Layout>(new DefaultLayout(values));
-}
+DefaultLayout::DefaultLayout(const esl::logging::SimpleLayout::Settings& aSettings)
+: settings(aSettings)
+{ }
 
-DefaultLayout::DefaultLayout(const std::vector<std::pair<std::string, std::string>>& settings) {
-	bool hasShowTimestamp = false;
-	bool hasShowLevel = false;
-	bool hasShowTypename = false;
-	bool hasShowAddress = false;
-	bool hasShowFile = false;
-	bool hasShowFunction = false;
-	bool hasShowLineNo = false;
-	bool hasShowThreadNo = false;
-
-
-	for(const auto& setting : settings) {
-		if(setting.first == "show-timestamp") {
-			if(hasShowTimestamp) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-timestamp'."));
-			}
-			hasShowTimestamp = true;
-			showTimestamp = convertValueToBool(setting.second);
-		}
-		else if(setting.first == "show-level") {
-			if(hasShowLevel) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-level'."));
-			}
-			hasShowLevel = true;
-			showLevel = convertValueToBool(setting.second);
-		}
-		else if(setting.first == "show-typename") {
-			if(hasShowTypename) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-typename'."));
-			}
-			hasShowTypename = true;
-			showTypename = convertValueToBool(setting.second);
-		}
-		else if(setting.first == "show-address") {
-			if(hasShowAddress) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-address'."));
-			}
-			hasShowAddress = true;
-			showAddress = convertValueToBool(setting.second);
-		}
-		else if(setting.first == "show-file") {
-			if(hasShowFile) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-file'."));
-			}
-			hasShowFile = true;
-			showFile = convertValueToBool(setting.second);
-		}
-		else if(setting.first == "show-function") {
-			if(hasShowFunction) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-function'."));
-			}
-			hasShowFunction = true;
-			showFunction = convertValueToBool(setting.second);
-		}
-		else if(setting.first == "show-line-no") {
-			if(hasShowLineNo) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-line-no'."));
-			}
-			hasShowLineNo = true;
-			showLineNo = convertValueToBool(setting.second);
-		}
-		else if(setting.first == "show-thread-no") {
-			if(hasShowThreadNo) {
-	            throw esl::system::Stacktrace::add(std::runtime_error("multiple definition of attribute 'show-thread-no'."));
-			}
-			hasShowThreadNo = true;
-			showThreadNo = convertValueToBool(setting.second);
-		}
-		else {
-			throw std::runtime_error("Unknown key \"" + setting.first + "\"");
-		}
-	}
-}
-
-std::string DefaultLayout::toString(const esl::logging::Location& location) const {
+std::string DefaultLayout::toString(const esl::logging::Streams::Location& location) const {
 	std::string rv;
 
-	if(showTimestamp) {
+	if(settings.showTimestamp) {
 		rv += formatTimestamp(location.timestamp);
 	}
 
-	if(showLevel) {
+	if(settings.showLevel) {
 		rv += formatLevel(location.level);
 	}
 
     rv += "(";
-	if(showTypename) {
+	if(settings.showTypename) {
 	    rv += formatTypeName(location.typeName);
 	}
-	if(showThreadNo) {
-		if(esl::logging::Logging::get()) {
-			rv += "-" + formatThreadNo(esl::logging::Logging::get()->getThreadNo(location.threadId));
+	if(settings.showThreadNo) {
+		if(esl::plugin::Registry::get().findObject<esl::logging::Logging>()) {
+			rv += "-" + formatThreadNo(esl::plugin::Registry::get().findObject<esl::logging::Logging>()->getThreadNo(location.threadId));
 		}
 		else {
 			rv += "- (thread?)";
 		}
 	}
-	if(showAddress) {
+	if(settings.showAddress) {
 		rv += " @ " + formatObject(location.object);
 	}
-	if(showFunction) {
+	if(settings.showFunction) {
 		rv += "|" + formatStrToSize(makeString(location.function), false, 20);
 	}
-	if(showFile) {
+	if(settings.showFile) {
 		rv += "|" + formatStrToSize(makeString(location.file), false, 20);
 	}
-	if(showLineNo) {
+	if(settings.showLineNo) {
 		rv += "|" + formatLineNo(location.line);
 	}
 	rv += "): ";
@@ -222,37 +145,6 @@ std::string DefaultLayout::toString(const esl::logging::Location& location) cons
 	return rv;
 }
 
-bool DefaultLayout::getShowTimestamp() const {
-	return showTimestamp;
-}
-
-bool DefaultLayout::getShowLevel() const {
-	return showLevel;
-}
-
-bool DefaultLayout::getShowTypename() const {
-	return showTypename;
-}
-
-bool DefaultLayout::getShowAddress() const {
-	return showAddress;
-}
-
-bool DefaultLayout::getShowFile() const {
-	return showFile;
-}
-
-bool DefaultLayout::getShowFunction() const {
-	return showFunction;
-}
-
-bool DefaultLayout::getShowLineNo() const {
-	return showLineNo;
-}
-
-bool DefaultLayout::getShowThreadNo() const {
-	return showThreadNo;
-}
-
 } /* namespace logging */
+} /* inline namespace v1_6 */
 } /* namespace common4esl */
