@@ -1,7 +1,7 @@
 #ifndef ESL_OBJECT_EXCEPTIONHANDLERPROCEDURE_H_
 #define ESL_OBJECT_EXCEPTIONHANDLERPROCEDURE_H_
 
-#include <esl/logging/Streams.h>
+#include <esl/monitoring/Streams.h>
 #include <esl/object/Context.h>
 #include <esl/object/Procedure.h>
 
@@ -28,7 +28,7 @@ public:
 		HandleException handleException = stop;
 		bool showStacktrace = true;
 		std::ostream* showOutputOStream = nullptr;
-		esl::logging::Streams::Real* showOutputStreamReal = nullptr;
+		esl::monitoring::Streams::Real* showOutputStreamReal = nullptr;
 	};
 
 	ExceptionHandlerProcedure(const Settings& settings);

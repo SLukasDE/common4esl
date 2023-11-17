@@ -1,30 +1,34 @@
-#ifndef ESL_LOGGING_MEMBUFFERAPPENDER_H_
-#define ESL_LOGGING_MEMBUFFERAPPENDER_H_
+#ifndef ESL_MONITORING_OSTREAMAPPENDER_H_
+#define ESL_MONITORING_OSTREAMAPPENDER_H_
 
-#include <esl/logging/Appender.h>
-#include <esl/logging/Layout.h>
-#include <esl/logging/Streams.h>
+#include <esl/monitoring/Appender.h>
+#include <esl/monitoring/Layout.h>
+#include <esl/monitoring/Streams.h>
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
-class MemBufferAppender : public Appender {
+class OStreamAppender : public Appender {
 public:
 	struct Settings {
-		Settings() = default;
 		Settings(const std::vector<std::pair<std::string, std::string>>& settings);
+		Settings(std::ostream& trace, std::ostream& debug, std::ostream& info, std::ostream& warn, std::ostream& error);
 
-		std::size_t maxLines = 0;
-		std::size_t maxColumns = 0;
+		std::ostream& trace;
+		std::ostream& debug;
+		std::ostream& info;
+		std::ostream& warn;
+		std::ostream& error;
 	};
 
-	MemBufferAppender(const Settings& settings);
+	OStreamAppender(const Settings& settings);
 
 	static std::unique_ptr<Appender> create(const std::vector<std::pair<std::string, std::string>>& settings);
 
@@ -43,9 +47,8 @@ private:
 	std::unique_ptr<Appender> appender;
 };
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace esl */
 
-
-#endif /* ESL_LOGGING_MEMBUFFERAPPENDER_H_ */
+#endif /* ESL_MONITORING_OSTREAMAPPENDER_H_ */

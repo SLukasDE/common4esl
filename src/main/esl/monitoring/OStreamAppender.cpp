@@ -1,13 +1,13 @@
-#include <esl/logging/OStreamAppender.h>
+#include <esl/monitoring/OStreamAppender.h>
 
-#include <common4esl/logging/OStreamAppender.h>
+#include <common4esl/monitoring/OStreamAppender.h>
 
 #include <iostream>
 #include <stdexcept>
 
 namespace esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
 namespace {
 OStreamAppender::Settings createOStreamSettings(const std::vector<std::pair<std::string, std::string>>& settings) {
@@ -131,7 +131,7 @@ OStreamAppender::Settings::Settings(std::ostream& aTrace, std::ostream& aDebug, 
 { }
 
 OStreamAppender::OStreamAppender(const Settings& settings)
-: appender(new common4esl::logging::OStreamAppender(settings))
+: appender(new common4esl::monitoring::OStreamAppender(settings))
 { }
 
 std::unique_ptr<Appender> OStreamAppender::create(const std::vector<std::pair<std::string, std::string>>& settings) {
@@ -162,6 +162,6 @@ void OStreamAppender::write(const Streams::Location& location, const char* ptr, 
 	appender->write(location, ptr, size);
 }
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace esl */

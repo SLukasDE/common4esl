@@ -73,7 +73,7 @@ void ExceptionHandler::dump(std::ostream& stream) const {
 	}
 }
 
-void ExceptionHandler::dump(esl::logging::Streams::Real& stream, esl::logging::Streams::Location location) const {
+void ExceptionHandler::dump(esl::monitoring::Streams::Real& stream, esl::monitoring::Streams::Location location) const {
 	for(std::size_t i=0; i<entries.size(); ++i) {
 		stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] Exception : " << entries[i].exceptionType << "\n";
 		stream(location.object, location.function, location.file, location.line) << "[" << (i+1) << "] What      : " << entries[i].what << "\n";

@@ -14,11 +14,11 @@ namespace object {
 namespace {
 esl::Logger logger("esl::object::ExceptionHandlerProcedure");
 
-void setShowOutput(ExceptionHandlerProcedure::Settings& settings, esl::logging::Streams::Real& aStreamReal) {
+void setShowOutput(ExceptionHandlerProcedure::Settings& settings, esl::monitoring::Streams::Real& aStreamReal) {
 	settings.showOutputStreamReal = &aStreamReal;
 }
 
-void setShowOutput(ExceptionHandlerProcedure::Settings& settings, esl::logging::Streams::Empty& aStreamEmpty) {
+void setShowOutput(ExceptionHandlerProcedure::Settings& settings, esl::monitoring::Streams::Empty& aStreamEmpty) {
 }
 }
 

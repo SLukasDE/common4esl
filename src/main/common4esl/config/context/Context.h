@@ -8,8 +8,8 @@
 //#include <common4esl/processing/Context.h>
 
 #include <esl/object/Object.h>
-#include <esl/logging/Appender.h>
-#include <esl/logging/Layout.h>
+#include <esl/monitoring/Appender.h>
+#include <esl/monitoring/Layout.h>
 #include <esl/plugin/Library.h>
 
 #include <tinyxml2/tinyxml2.h>

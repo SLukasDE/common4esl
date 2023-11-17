@@ -4,7 +4,7 @@
 #include <esl/object/Value.h>
 #include <esl/utility/String.h>
 
-#include <esl/logging/Logging.h>
+#include <esl/monitoring/Logging.h>
 #include <esl/plugin/Registry.h>
 
 #include <exception>
@@ -29,16 +29,16 @@ void ExceptionHandlerProcedure::procedureRun(esl::object::Context& context) {
 		common4esl::ExceptionHandler exceptionHandler(**exceptionPointer, settings.showStacktrace, false);
 
 		if(settings.showOutputOStream) {
-			if(esl::plugin::Registry::get().findObject<esl::logging::Logging>()) {
-				esl::plugin::Registry::get().findObject<esl::logging::Logging>()->flush(settings.showOutputOStream);
+			if(esl::plugin::Registry::get().findObject<esl::monitoring::Logging>()) {
+				esl::plugin::Registry::get().findObject<esl::monitoring::Logging>()->flush(settings.showOutputOStream);
 			}
 
 			exceptionHandler.dump(*settings.showOutputOStream);
 		}
 		else if(settings.showOutputStreamReal) {
-			if(esl::plugin::Registry::get().findObject<esl::logging::Logging>()) {
+			if(esl::plugin::Registry::get().findObject<esl::monitoring::Logging>()) {
 				std::stringstream oStream;
-				esl::plugin::Registry::get().findObject<esl::logging::Logging>()->flush(&oStream);
+				esl::plugin::Registry::get().findObject<esl::monitoring::Logging>()->flush(&oStream);
 				(*settings.showOutputStreamReal) << oStream.str();
 			}
 

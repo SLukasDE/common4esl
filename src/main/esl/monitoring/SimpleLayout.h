@@ -1,8 +1,8 @@
-#ifndef ESL_LOGGING_SIMPLELAYOUT_H_
-#define ESL_LOGGING_SIMPLELAYOUT_H_
+#ifndef ESL_MONITORING_SIMPLELAYOUT_H_
+#define ESL_MONITORING_SIMPLELAYOUT_H_
 
-#include <esl/logging/Layout.h>
-#include <esl/logging/Streams.h>
+#include <esl/monitoring/Layout.h>
+#include <esl/monitoring/Streams.h>
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 
 namespace esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
 class SimpleLayout : public Layout {
 public:
@@ -39,8 +39,8 @@ private:
 	std::unique_ptr<Layout> layout;
 };
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace esl */
 
-#endif /* ESL_LOGGING_SIMPLELAYOUT_H_ */
+#endif /* ESL_MONITORING_SIMPLELAYOUT_H_ */

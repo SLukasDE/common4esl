@@ -1,14 +1,14 @@
-#include <esl/logging/SimpleLayout.h>
+#include <esl/monitoring/SimpleLayout.h>
 #include <esl/utility/String.h>
 #include <esl/system/Stacktrace.h>
 
-#include <common4esl/logging/DefaultLayout.h>
+#include <common4esl/monitoring/DefaultLayout.h>
 
 #include <stdexcept>
 
 namespace esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
 SimpleLayout::Settings::Settings(const std::vector<std::pair<std::string, std::string>>& settings) {
 	bool hasShowTimestamp = false;
@@ -84,7 +84,7 @@ SimpleLayout::Settings::Settings(const std::vector<std::pair<std::string, std::s
 }
 
 SimpleLayout::SimpleLayout(const Settings& settings)
-: layout(new common4esl::logging::DefaultLayout(settings))
+: layout(new common4esl::monitoring::DefaultLayout(settings))
 { }
 
 std::unique_ptr<Layout> SimpleLayout::create(const std::vector<std::pair<std::string, std::string>>& settings) {
@@ -95,6 +95,6 @@ std::string SimpleLayout::toString(const Streams::Location& location) const {
 	return layout->toString(location);
 }
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace esl */

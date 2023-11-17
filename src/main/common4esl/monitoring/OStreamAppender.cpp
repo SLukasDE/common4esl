@@ -1,16 +1,16 @@
-#include <common4esl/logging/OStreamAppender.h>
+#include <common4esl/monitoring/OStreamAppender.h>
 
-#include <esl/logging/Logger.h>
+#include <esl/monitoring/Logger.h>
 
 #include <cstdio>
 #include <iostream>
 
 namespace common4esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
 namespace {
-bool equal(const esl::logging::Streams::Location& location1, const esl::logging::Streams::Location& location2) {
+bool equal(const esl::monitoring::Streams::Location& location1, const esl::monitoring::Streams::Location& location2) {
 	return location1.level == location2.level &&
 			location1.object == location2.object &&
 			location1.typeName == location2.typeName &&
@@ -20,24 +20,24 @@ bool equal(const esl::logging::Streams::Location& location1, const esl::logging:
 }
 } /* anonymous namespce */
 
-OStreamAppender::OStreamAppender(const esl::logging::OStreamAppender::Settings& aSettings)
+OStreamAppender::OStreamAppender(const esl::monitoring::OStreamAppender::Settings& aSettings)
 : settings(aSettings)
 { }
 
-void OStreamAppender::setLayout(const esl::logging::Layout* aLayout) {
+void OStreamAppender::setLayout(const esl::monitoring::Layout* aLayout) {
 	layout = aLayout;
 }
 
-const esl::logging::Layout* OStreamAppender::getLayout() const {
+const esl::monitoring::Layout* OStreamAppender::getLayout() const {
 	return layout;
 }
 
 /* both methods are NOT thread-safe */
-void OStreamAppender::setRecordLevel(esl::logging::Appender::RecordLevel aRecordLevel) {
+void OStreamAppender::setRecordLevel(esl::monitoring::Appender::RecordLevel aRecordLevel) {
 	recordLevel = aRecordLevel;
 }
 
-esl::logging::Appender::RecordLevel OStreamAppender::getRecordLevel() const {
+esl::monitoring::Appender::RecordLevel OStreamAppender::getRecordLevel() const {
 	return recordLevel;
 }
 
@@ -57,7 +57,7 @@ void OStreamAppender::flush(std::ostream*) {
 	getOStream(lastLocation.level).flush();
 }
 
-void OStreamAppender::write(const esl::logging::Streams::Location& aLocation, const char* ptr, std::size_t size) {
+void OStreamAppender::write(const esl::monitoring::Streams::Location& aLocation, const char* ptr, std::size_t size) {
 	switch(getRecordLevel()) {
 	case RecordLevel::OFF:
 		return;
@@ -105,17 +105,17 @@ void OStreamAppender::write(const esl::logging::Streams::Location& aLocation, co
 	oStream << std::string(begin, &ptr[size]);
 }
 
-std::ostream& OStreamAppender::getOStream(esl::logging::Streams::Level level) {
+std::ostream& OStreamAppender::getOStream(esl::monitoring::Streams::Level level) {
 	switch(level) {
-	case esl::logging::Streams::Level::TRACE:
+	case esl::monitoring::Streams::Level::TRACE:
 		return settings.trace;
-	case esl::logging::Streams::Level::DEBUG:
+	case esl::monitoring::Streams::Level::DEBUG:
 		return settings.debug;
-	case esl::logging::Streams::Level::INFO:
+	case esl::monitoring::Streams::Level::INFO:
 		return settings.info;
-	case esl::logging::Streams::Level::WARN:
+	case esl::monitoring::Streams::Level::WARN:
 		return settings.warn;
-	case esl::logging::Streams::Level::ERROR:
+	case esl::monitoring::Streams::Level::ERROR:
 		return settings.error;
 	default:
 		break;
@@ -124,6 +124,6 @@ std::ostream& OStreamAppender::getOStream(esl::logging::Streams::Level level) {
 	return settings.error;
 }
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace common4esl */

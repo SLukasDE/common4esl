@@ -4,7 +4,7 @@
 #include <esl/object/ExceptionHandlerProcedure.h>
 #include <esl/object/Procedure.h>
 
-#include <esl/logging/Streams.h>
+#include <esl/monitoring/Streams.h>
 #include <esl/object/Context.h>
 
 #include <memory>

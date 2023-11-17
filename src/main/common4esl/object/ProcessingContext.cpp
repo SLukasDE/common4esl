@@ -4,7 +4,7 @@
 #include <esl/com/http/server/exception/StatusCode.h>
 #include <esl/database/exception/SqlError.h>
 #include <esl/Logger.h>
-#include <esl/logging/Logging.h>
+#include <esl/monitoring/Logging.h>
 #include <esl/object/Value.h>
 
 #include <exception>

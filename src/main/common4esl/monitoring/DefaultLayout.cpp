@@ -1,8 +1,8 @@
-#include <common4esl/logging/DefaultLayout.h>
+#include <common4esl/monitoring/DefaultLayout.h>
 
 #include <esl/utility/String.h>
 
-#include <esl/logging/Logging.h>
+#include <esl/monitoring/Logging.h>
 #include <esl/plugin/Registry.h>
 #include <esl/system/Stacktrace.h>
 
@@ -14,7 +14,7 @@
 
 namespace common4esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
 namespace {
 
@@ -63,17 +63,17 @@ std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_cl
 	return formatTimestamp(timestamp);
 }
 
-std::string formatLevel(esl::logging::Streams::Level level) {
+std::string formatLevel(esl::monitoring::Streams::Level level) {
     switch(level) {
-    case esl::logging::Streams::Level::TRACE:
+    case esl::monitoring::Streams::Level::TRACE:
     	return "[TRACE] ";
-    case esl::logging::Streams::Level::DEBUG:
+    case esl::monitoring::Streams::Level::DEBUG:
     	return "[DEBUG] ";
-    case esl::logging::Streams::Level::INFO:
+    case esl::monitoring::Streams::Level::INFO:
     	return "[INFO ] ";
-    case esl::logging::Streams::Level::WARN:
+    case esl::monitoring::Streams::Level::WARN:
     	return"[WARN ] ";
-    case esl::logging::Streams::Level::ERROR:
+    case esl::monitoring::Streams::Level::ERROR:
     	return "[ERROR] ";
     default:
         break;
@@ -101,11 +101,11 @@ std::string formatLineNo(unsigned int lineNo) {
 
 } /* anonymous namespace */
 
-DefaultLayout::DefaultLayout(const esl::logging::SimpleLayout::Settings& aSettings)
+DefaultLayout::DefaultLayout(const esl::monitoring::SimpleLayout::Settings& aSettings)
 : settings(aSettings)
 { }
 
-std::string DefaultLayout::toString(const esl::logging::Streams::Location& location) const {
+std::string DefaultLayout::toString(const esl::monitoring::Streams::Location& location) const {
 	std::string rv;
 
 	if(settings.showTimestamp) {
@@ -121,8 +121,8 @@ std::string DefaultLayout::toString(const esl::logging::Streams::Location& locat
 	    rv += formatTypeName(location.typeName);
 	}
 	if(settings.showThreadNo) {
-		if(esl::plugin::Registry::get().findObject<esl::logging::Logging>()) {
-			rv += "-" + formatThreadNo(esl::plugin::Registry::get().findObject<esl::logging::Logging>()->getThreadNo(location.threadId));
+		if(esl::plugin::Registry::get().findObject<esl::monitoring::Logging>()) {
+			rv += "-" + formatThreadNo(esl::plugin::Registry::get().findObject<esl::monitoring::Logging>()->getThreadNo(location.threadId));
 		}
 		else {
 			rv += "- (thread?)";
@@ -145,6 +145,6 @@ std::string DefaultLayout::toString(const esl::logging::Streams::Location& locat
 	return rv;
 }
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace common4esl */

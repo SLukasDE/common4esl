@@ -8,7 +8,7 @@
 #include <esl/plugin/Registry.h>
 #include <esl/plugin/exception/PluginNotFound.h>
 #include <esl/object/ProcessingContext.h>
-//#include <esl/logging/Logger.h>
+//#include <esl/monitoring/Logger.h>
 
 #include <iostream>
 #include <stdexcept>
@@ -248,7 +248,7 @@ void Context::parseInnerElement(const tinyxml2::XMLElement& element) {
 	}
 	/*
 	else if(elementName == "esl-logger" && isRoot == true) {
-		eslLoggers.push_back(logging::Logger(getFileName(), element));
+		eslLoggers.push_back(monitoring::Logger(getFileName(), element));
 	}
 	*/
 	else if(elementName == "parameter" && isRoot == false) {

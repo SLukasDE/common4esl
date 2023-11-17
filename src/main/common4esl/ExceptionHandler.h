@@ -1,7 +1,7 @@
 #ifndef COMMON4ESL_EXCEPTIONHANDLER_H_
 #define COMMON4ESL_EXCEPTIONHANDLER_H_
 
-#include <esl/logging/Streams.h>
+#include <esl/monitoring/Streams.h>
 
 #include <exception>
 #include <ostream>
@@ -16,8 +16,8 @@ public:
 	ExceptionHandler(std::exception_ptr exceptionPointer, bool showStacktrace, bool showFilePosition);
 
 	void dump(std::ostream& stream) const;
-	void dump(esl::logging::Streams::Real& stream, esl::logging::Streams::Location location = esl::logging::Streams::Location{}) const;
-	inline void dump(esl::logging::Streams::Empty& stream, esl::logging::Streams::Location location = esl::logging::Streams::Location{}) const { };
+	void dump(esl::monitoring::Streams::Real& stream, esl::monitoring::Streams::Location location = esl::monitoring::Streams::Location{}) const;
+	inline void dump(esl::monitoring::Streams::Empty& stream, esl::monitoring::Streams::Location location = esl::monitoring::Streams::Location{}) const { };
 
 private:
 	void initialize(std::exception_ptr exceptionPointer);

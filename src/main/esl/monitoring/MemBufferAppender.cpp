@@ -1,12 +1,12 @@
-#include <esl/logging/MemBufferAppender.h>
+#include <esl/monitoring/MemBufferAppender.h>
 
-#include <common4esl/logging/MemBufferAppender.h>
+#include <common4esl/monitoring/MemBufferAppender.h>
 
 #include <stdexcept>
 
 namespace esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
 MemBufferAppender::Settings::Settings(const std::vector<std::pair<std::string, std::string>>& settings) {
 	bool hasMaxColumns = false;
@@ -38,7 +38,7 @@ MemBufferAppender::Settings::Settings(const std::vector<std::pair<std::string, s
 }
 
 MemBufferAppender::MemBufferAppender(const Settings& settings)
-: appender(new common4esl::logging::MemBufferAppender(settings))
+: appender(new common4esl::monitoring::MemBufferAppender(settings))
 { }
 
 std::unique_ptr<Appender> MemBufferAppender::create(const std::vector<std::pair<std::string, std::string>>& settings) {
@@ -69,6 +69,6 @@ void MemBufferAppender::write(const Streams::Location& location, const char* ptr
 	appender->write(location, ptr, size);
 }
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace esl */

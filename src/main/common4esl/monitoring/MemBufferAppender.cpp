@@ -20,14 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <common4esl/logging/MemBufferAppender.h>
+#include <common4esl/monitoring/MemBufferAppender.h>
 
 namespace common4esl {
 inline namespace v1_6 {
-namespace logging {
+namespace monitoring {
 
 namespace {
-bool equal(const esl::logging::Streams::Location& location1, const esl::logging::Streams::Location& location2) {
+bool equal(const esl::monitoring::Streams::Location& location1, const esl::monitoring::Streams::Location& location2) {
 	return location1.level == location2.level &&
 			location1.object == location2.object &&
 			location1.typeName == location2.typeName &&
@@ -37,27 +37,27 @@ bool equal(const esl::logging::Streams::Location& location1, const esl::logging:
 }
 }
 
-MemBufferAppender::MemBufferAppender(esl::logging::MemBufferAppender::Settings aSettings)
+MemBufferAppender::MemBufferAppender(esl::monitoring::MemBufferAppender::Settings aSettings)
 : settings(aSettings),
   entries(settings.maxLines+1, settings.maxColumns)
 {
 
 }
 
-void MemBufferAppender::setLayout(const esl::logging::Layout* aLayout) {
+void MemBufferAppender::setLayout(const esl::monitoring::Layout* aLayout) {
 	layout = aLayout;
 }
 
-const esl::logging::Layout* MemBufferAppender::getLayout() const {
+const esl::monitoring::Layout* MemBufferAppender::getLayout() const {
 	return layout;
 }
 
 /* both methods are NOT thread-safe */
-void MemBufferAppender::setRecordLevel(esl::logging::Appender::RecordLevel aRecordLevel) {
+void MemBufferAppender::setRecordLevel(esl::monitoring::Appender::RecordLevel aRecordLevel) {
 	recordLevel = aRecordLevel;
 }
 
-esl::logging::Appender::RecordLevel MemBufferAppender::getRecordLevel() const {
+esl::monitoring::Appender::RecordLevel MemBufferAppender::getRecordLevel() const {
 	return recordLevel;
 }
 
@@ -66,7 +66,7 @@ void MemBufferAppender::flush(std::ostream* oStream) {
 		return;
 	}
 
-	std::vector<std::tuple<esl::logging::Streams::Location, std::string>> buffer;
+	std::vector<std::tuple<esl::monitoring::Streams::Location, std::string>> buffer;
 
 	if(settings.maxColumns > 0) {
 		for(std::size_t tmpIdxCons = rowConsumer; tmpIdxCons != rowProducer; tmpIdxCons = (tmpIdxCons + 1) % (settings.maxLines+1)) {
@@ -91,7 +91,7 @@ void MemBufferAppender::flush(std::ostream* oStream) {
     }
 }
 
-void MemBufferAppender::write(const esl::logging::Streams::Location& location, const char* str, std::size_t len) {
+void MemBufferAppender::write(const esl::monitoring::Streams::Location& location, const char* str, std::size_t len) {
 	switch(getRecordLevel()) {
 	case RecordLevel::OFF:
 		return;
@@ -155,6 +155,6 @@ void MemBufferAppender::newline() {
     columnsProducer = 0;
 }
 
-} /* namespace logging */
+} /* namespace monitoring */
 } /* inline namespace v1_6 */
 } /* namespace common4esl */
