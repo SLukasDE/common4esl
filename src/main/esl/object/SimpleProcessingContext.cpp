@@ -77,10 +77,6 @@ void SimpleProcessingContext::procedureCancel() {
 	std::get<1>(object).procedureCancel();
 }
 
-void SimpleProcessingContext::onEvent(const esl::object::Object& aObject) {
-	std::get<1>(object).onEvent(aObject);
-}
-
 io::Input SimpleProcessingContext::accept(com::common::server::RequestContext& requestContext) {
 	return std::get<1>(object).accept(requestContext);
 }

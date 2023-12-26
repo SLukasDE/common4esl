@@ -40,7 +40,6 @@ public:
 	void addAlias(const std::string& destinationId, const std::string& sourceId) override;
 	int getReturnCode() const override;
 
-	void onEvent(const esl::object::Object& object) override;
 	std::set<std::string> getObjectIds() const override;
 	void procedureRun(esl::object::Context& context) override;
 

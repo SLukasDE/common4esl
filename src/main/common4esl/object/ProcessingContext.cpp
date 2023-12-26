@@ -92,16 +92,6 @@ int ProcessingContext::getReturnCode() const {
 	return returnCode;
 }
 
-void ProcessingContext::onEvent(const esl::object::Object& object) {
-	if(!isInitialized) {
-		initializeContext(*this);
-	}
-
-	for(auto& entry : entries) {
-		entry->onEvent(object);
-	}
-}
-
 std::set<std::string> ProcessingContext::getObjectIds() const {
 	std::set<std::string> rv;
 

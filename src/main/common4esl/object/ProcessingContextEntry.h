@@ -2,7 +2,6 @@
 #define COMMON4ESL_OBJECT_PROCESSINGCONTEXTENTRY_H_
 
 #include <esl/object/Context.h>
-#include <esl/object/Event.h>
 #include <esl/object/InitializeContext.h>
 #include <esl/object/Object.h>
 #include <esl/object/Procedure.h>
@@ -19,7 +18,6 @@ public:
 	ProcessingContextEntry(esl::object::Object& refObject);
 
 	void initializeContext(esl::object::Context& context);
-	void onEvent(const esl::object::Object& object);
 	void procedureRun(esl::object::Context& context);
 	void procedureCancel();
 
@@ -28,8 +26,6 @@ private:
 	esl::object::Object& refObject;
 
 	esl::object::InitializeContext* initializeContextPtr = nullptr;
-	//IContext* context = nullptr;
-	esl::object::Event* event = nullptr;
 	esl::object::Procedure* procedure = nullptr;
 };
 

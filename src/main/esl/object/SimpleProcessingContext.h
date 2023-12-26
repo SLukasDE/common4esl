@@ -46,8 +46,6 @@ public:
 	void procedureRun(Context& context) override;
 	void procedureCancel() override;
 
-	void onEvent(const esl::object::Object& object) override;
-
 	io::Input accept(com::common::server::RequestContext& requestContext) override;
 	std::set<std::string> getNotifiers() const override;
 
