@@ -56,6 +56,138 @@ void ProcessingContext::addObject(const std::string& id, std::unique_ptr<esl::ob
 	}
 }
 
+std::unique_ptr<esl::object::Object> ProcessingContext::runCommand(const std::string& command, esl::object::Object* argument) {
+	if(command == "load-xml-data") {
+		if(!argument) {
+			throw std::runtime_error("Arguments missing on calling runCommand(\"" + command + "\", <argument>)");
+		}
+
+		{
+			esl::object::Value<std::string>* stringPtr = dynamic_cast<esl::object::Value<std::string>*>(argument);
+			if(stringPtr) {
+				config::context::Context context(stringPtr->get());
+
+				context.loadLibraries();
+				context.install(*this);
+
+				return nullptr;
+			}
+		}
+
+		{
+			esl::object::Value<std::vector<std::pair<std::string, std::string>>>* settingsPtr = dynamic_cast<esl::object::Value<std::vector<std::pair<std::string, std::string>>>*>(argument);
+			if(settingsPtr) {
+				std::vector<std::pair<std::string, std::string>>& settings = settingsPtr->get();
+				std::string tag;
+				std::string data;
+
+				for(const auto& setting : settings) {
+					if(setting.first == "data") {
+						if(!data.empty()) {
+							throw std::runtime_error("Multiple definition of key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+						data = setting.second;
+						if(data.empty()) {
+							throw std::runtime_error("Invalid value \"" + setting.second + "\" for key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+					}
+					else if(setting.first == "tag") {
+						if(!tag.empty()) {
+							throw std::runtime_error("Multiple definition of key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+						tag = setting.second;
+						if(tag.empty()) {
+							throw std::runtime_error("Invalid value \"" + setting.second + "\" for key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+					}
+					else {
+						throw std::runtime_error("Unknown key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+					}
+				}
+
+				if(data.empty()) {
+					throw std::runtime_error("Key \"data\" is missing in settings on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+				}
+
+				config::context::Context context(data);
+
+				context.loadLibraries();
+				context.install(*this);
+
+				return nullptr;
+			}
+
+			throw std::runtime_error("Wrong type of argument on calling runCommand(\"" + command + "\", <argument>). Type of argument should be esl::object::StringValue or esl::object::VectorPairStringStringValue.");
+		}
+	}
+	else if(command == "load-xml-file") {
+		if(!argument) {
+			throw std::runtime_error("Arguments missing on calling runCommand(\"" + command + "\", <argument>)");
+		}
+
+		{
+			esl::object::Value<std::string>* stringPtr = dynamic_cast<esl::object::Value<std::string>*>(argument);
+			if(stringPtr) {
+				config::context::Context context(boost::filesystem::path(stringPtr->get()));
+
+				context.loadLibraries();
+				context.install(*this);
+
+				return nullptr;
+			}
+		}
+
+		{
+			esl::object::Value<std::vector<std::pair<std::string, std::string>>>* settingsPtr = dynamic_cast<esl::object::Value<std::vector<std::pair<std::string, std::string>>>*>(argument);
+			if(settingsPtr) {
+				std::vector<std::pair<std::string, std::string>>& settings = settingsPtr->get();
+				std::string tag;
+				std::string filename;
+
+				for(const auto& setting : settings) {
+					if(setting.first == "filename") {
+						if(!filename.empty()) {
+							throw std::runtime_error("Multiple definition of key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+						filename = setting.second;
+						if(filename.empty()) {
+							throw std::runtime_error("Invalid value \"" + setting.second + "\" for key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+					}
+					else if(setting.first == "tag") {
+						if(!tag.empty()) {
+							throw std::runtime_error("Multiple definition of key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+						tag = setting.second;
+						if(tag.empty()) {
+							throw std::runtime_error("Invalid value \"" + setting.second + "\" for key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+						}
+					}
+					else {
+						throw std::runtime_error("Unknown key \"" + setting.first + "\" on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+					}
+				}
+
+				if(filename.empty()) {
+					throw std::runtime_error("Key \"filename\" is missing in settings on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
+				}
+
+				boost::filesystem::path filenamePath(filename);
+				config::context::Context context(filenamePath);
+
+				context.loadLibraries();
+				context.install(*this);
+
+				return nullptr;
+			}
+
+			throw std::runtime_error("Wrong type of argument on calling runCommand(\"" + command + "\", <argument>). Type of argument should be esl::object::StringValue or esl::object::VectorPairStringStringValue.");
+		}
+	}
+
+	throw std::runtime_error("Unknown command on calling runCommand(\"" + command + "\", <argument>)");
+}
+/*
 void ProcessingContext::addData(const std::string& configuration) {
 	config::context::Context config(configuration);
 
@@ -69,7 +201,7 @@ void ProcessingContext::addFile(const boost::filesystem::path& filename) {
 	config.loadLibraries();
 	config.install(*this);
 }
-
+*/
 void ProcessingContext::addAlias(const std::string& destinationId, const std::string& sourceId) {
 	esl::object::Object* object = findRawObject(sourceId);
 

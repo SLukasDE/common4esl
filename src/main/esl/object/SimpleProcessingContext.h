@@ -3,6 +3,7 @@
 
 #include <esl/com/common/server/RequestContext.h>
 #include <esl/io/Input.h>
+#include <esl/object/Command.h>
 #include <esl/object/Context.h>
 #include <esl/object/InitializeContext.h>
 #include <esl/object/Object.h>
@@ -21,7 +22,9 @@ namespace esl {
 inline namespace v1_6 {
 namespace object {
 
-class SimpleProcessingContext : public ProcessingContext, public InitializeContext {
+class SimpleProcessingContextInterface : public ProcessingContext, public InitializeContext, public Command { };
+
+class SimpleProcessingContext : public SimpleProcessingContextInterface {
 public:
 	struct Settings {
 		Settings() = default;
@@ -33,13 +36,15 @@ public:
 	SimpleProcessingContext(const Settings& settings);
 
 	static std::unique_ptr<ProcessingContext> create(const std::vector<std::pair<std::string, std::string>>& settings);
+	static std::unique_ptr<SimpleProcessingContextInterface> createNative(const Settings& settings);
 
 
 	void setParentObjectContext(Context* aParentObject) override;
 	void addAlias(const std::string& destinationId, const std::string& sourceId) override;
 
-	void addData(const std::string& configuration) override;
-	void addFile(const boost::filesystem::path& filename) override;
+	std::unique_ptr<Object> runCommand(const std::string& command, Object* argument) override;
+	//void addData(const std::string& configuration) override;
+	//void addFile(const boost::filesystem::path& filename) override;
 
 	int getReturnCode() const override;
 
@@ -60,9 +65,7 @@ protected:
 	const Object* findRawObject(const std::string& id) const override;
 
 private:
-	SimpleProcessingContext(std::tuple<std::unique_ptr<Object>, ProcessingContext&, InitializeContext&> object);
-
-	std::tuple<std::unique_ptr<Object>, ProcessingContext&, InitializeContext&> object;
+	std::unique_ptr<SimpleProcessingContextInterface> object;
 };
 
 } /* namespace object */
