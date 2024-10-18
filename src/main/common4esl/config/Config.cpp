@@ -14,13 +14,13 @@ namespace {
 esl::Logger logger("common4esl::config::Config");
 } /* anonymous namespace */
 
-Config::Config(const std::string& aFileName)
-: fileName(aFileName),
+Config::Config(const std::string& aFilename)
+: filename(aFilename),
   lineNo(-1)
 { }
 
-Config::Config(const std::string& aFileName, const tinyxml2::XMLElement& aElement)
-: fileName(aFileName),
+Config::Config(const std::string& aFilename, const tinyxml2::XMLElement& aElement)
+: filename(aFilename),
   lineNo(aElement.GetLineNum())
 { }
 
@@ -92,7 +92,7 @@ std::string Config::evaluate(const std::string& expression, const std::string& l
 }
 
 const std::string& Config::getFileName() const noexcept {
-	return fileName;
+	return filename;
 }
 
 int Config::getLineNo() const noexcept {
@@ -100,31 +100,31 @@ int Config::getLineNo() const noexcept {
 }
 
 std::pair<std::string, int> Config::getXMLFile() const noexcept {
-	return std::pair<std::string, int>(fileName, lineNo);
+	return std::pair<std::string, int>(filename, lineNo);
 }
 
 std::pair<std::string, int> Config::setXMLFile(const std::string& aFileName, int aLineNo) {
-	std::pair<std::string, int> oldXmlFile(fileName, lineNo);
+	std::pair<std::string, int> oldXmlFile(filename, lineNo);
 
-	fileName = aFileName;
+	filename = aFileName;
 	lineNo = aLineNo;
 
 	return oldXmlFile;
 }
 
 std::pair<std::string, int> Config::setXMLFile(const std::string& aFileName, const tinyxml2::XMLElement& aElement) {
-	std::pair<std::string, int> oldXmlFile(fileName, lineNo);
+	std::pair<std::string, int> oldXmlFile(filename, lineNo);
 
-	fileName = aFileName;
+	filename = aFileName;
 	lineNo = aElement.GetLineNum();
 
 	return oldXmlFile;
 }
 
 std::pair<std::string, int> Config::setXMLFile(const std::pair<std::string, int>& aXmlFile) {
-	std::pair<std::string, int> oldXmlFile(fileName, lineNo);
+	std::pair<std::string, int> oldXmlFile(filename, lineNo);
 
-	fileName = aXmlFile.first;
+	filename = aXmlFile.first;
 	lineNo = aXmlFile.second;
 
 	return oldXmlFile;

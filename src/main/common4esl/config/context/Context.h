@@ -12,9 +12,7 @@
 #include <esl/monitoring/Layout.h>
 #include <esl/plugin/Library.h>
 
-#include <tinyxml2/tinyxml2.h>
-
-#include <boost/filesystem/path.hpp>
+#include <tinyxml2.h>
 
 #include <memory>
 #include <ostream>
@@ -30,9 +28,8 @@ namespace context {
 
 class Context : public Config {
 public:
-	Context(const std::string& fileName, const tinyxml2::XMLElement& element);
-	explicit Context(const std::string& configuration);
-	explicit Context(const boost::filesystem::path& filename);
+	Context(const std::string& filename, const tinyxml2::XMLElement& element);
+	Context(bool isFile, const std::string& value);
 
 	void save(std::ostream& oStream, std::size_t spaces = 0) const;
 	void install(object::ProcessingContext& context);

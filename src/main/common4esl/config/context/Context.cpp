@@ -22,8 +22,8 @@ namespace {
 esl::Logger logger("common4esl::config::context::Context");
 } /* anonymous namespace */
 
-Context::Context(const std::string& fileName, const tinyxml2::XMLElement& element)
-: Config(fileName, element),
+Context::Context(const std::string& filename, const tinyxml2::XMLElement& element)
+: Config(filename, element),
   isRoot(false)
 {
 	if(element.GetUserData() != nullptr) {
@@ -92,11 +92,17 @@ Context::Context(const std::string& fileName, const tinyxml2::XMLElement& elemen
 	}
 }
 
-Context::Context(const std::string& configuration)
-: config::Config("{mem}"),
+Context::Context(bool isFile, const std::string& value)
+: config::Config(isFile ? value : "{mem}"),
   isRoot(true)
 {
-	tinyxml2::XMLError xmlError = xmlDocument.Parse(configuration.c_str(), configuration.size());
+	if(isFile) {
+		filesLoaded.insert(value);
+	}
+
+	tinyxml2::XMLError xmlError = isFile ?
+			xmlDocument.LoadFile(value.c_str()) :
+			xmlDocument.Parse(value.c_str(), value.size());
 	if(xmlError != tinyxml2::XML_SUCCESS) {
 		throw FilePosition::add(*this, xmlError);
 	}
@@ -106,10 +112,10 @@ Context::Context(const std::string& configuration)
 		throw FilePosition::add(*this, "No root element");
 	}
 
-	setXMLFile(getFileName(), *element);
+	//setXMLFile(getFileName(), *element);
 	loadXML(*element);
 }
-
+#if 0
 Context::Context(const boost::filesystem::path& filename)
 : config::Config(filename.generic_string()),
   isRoot(true)
@@ -129,6 +135,7 @@ Context::Context(const boost::filesystem::path& filename)
 	setXMLFile(filename.generic_string(), *element);
 	loadXML(*element);
 }
+#endif
 
 void Context::save(std::ostream& oStream, std::size_t spaces) const {
 	if(isRoot) {

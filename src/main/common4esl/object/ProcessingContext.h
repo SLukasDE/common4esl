@@ -12,8 +12,6 @@
 #include <esl/object/ProcessingContext.h>
 #include <esl/object/SimpleProcessingContext.h>
 
-#include <boost/filesystem/path.hpp>
-
 #include <map>
 #include <memory>
 #include <ostream>
@@ -37,8 +35,6 @@ public:
 	void addObject(const std::string& id, std::unique_ptr<esl::object::Object> object) override;
 
 	std::unique_ptr<esl::object::Object> runCommand(const std::string& command, esl::object::Object* argument) override;
-	//void addData(const std::string& configuration) override;
-	//void addFile(const boost::filesystem::path& filename) override;
 
 	void addAlias(const std::string& destinationId, const std::string& sourceId) override;
 	int getReturnCode() const override;

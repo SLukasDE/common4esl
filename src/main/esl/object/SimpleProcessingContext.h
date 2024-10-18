@@ -9,8 +9,6 @@
 #include <esl/object/Object.h>
 #include <esl/object/ProcessingContext.h>
 
-#include <boost/filesystem/path.hpp>
-
 #include <memory>
 #include <set>
 #include <string>
@@ -43,8 +41,6 @@ public:
 	void addAlias(const std::string& destinationId, const std::string& sourceId) override;
 
 	std::unique_ptr<Object> runCommand(const std::string& command, Object* argument) override;
-	//void addData(const std::string& configuration) override;
-	//void addFile(const boost::filesystem::path& filename) override;
 
 	int getReturnCode() const override;
 

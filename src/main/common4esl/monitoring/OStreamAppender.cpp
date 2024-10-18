@@ -107,15 +107,15 @@ void OStreamAppender::write(const esl::monitoring::Streams::Location& aLocation,
 
 std::ostream& OStreamAppender::getOStream(esl::monitoring::Streams::Level level) {
 	switch(level) {
-	case esl::monitoring::Streams::Level::TRACE:
+	case esl::monitoring::Streams::Level::trace:
 		return settings.trace;
-	case esl::monitoring::Streams::Level::DEBUG:
+	case esl::monitoring::Streams::Level::debug:
 		return settings.debug;
-	case esl::monitoring::Streams::Level::INFO:
+	case esl::monitoring::Streams::Level::info:
 		return settings.info;
-	case esl::monitoring::Streams::Level::WARN:
+	case esl::monitoring::Streams::Level::warn:
 		return settings.warn;
-	case esl::monitoring::Streams::Level::ERROR:
+	case esl::monitoring::Streams::Level::error:
 		return settings.error;
 	default:
 		break;

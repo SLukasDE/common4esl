@@ -65,7 +65,7 @@ std::unique_ptr<esl::object::Object> ProcessingContext::runCommand(const std::st
 		{
 			esl::object::Value<std::string>* stringPtr = dynamic_cast<esl::object::Value<std::string>*>(argument);
 			if(stringPtr) {
-				config::context::Context context(stringPtr->get());
+				config::context::Context context(false, stringPtr->get());
 
 				context.loadLibraries();
 				context.install(*this);
@@ -109,7 +109,7 @@ std::unique_ptr<esl::object::Object> ProcessingContext::runCommand(const std::st
 					throw std::runtime_error("Key \"data\" is missing in settings on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
 				}
 
-				config::context::Context context(data);
+				config::context::Context context(false, data);
 
 				context.loadLibraries();
 				context.install(*this);
@@ -128,7 +128,7 @@ std::unique_ptr<esl::object::Object> ProcessingContext::runCommand(const std::st
 		{
 			esl::object::Value<std::string>* stringPtr = dynamic_cast<esl::object::Value<std::string>*>(argument);
 			if(stringPtr) {
-				config::context::Context context(boost::filesystem::path(stringPtr->get()));
+				config::context::Context context(true, stringPtr->get());
 
 				context.loadLibraries();
 				context.install(*this);
@@ -172,8 +172,7 @@ std::unique_ptr<esl::object::Object> ProcessingContext::runCommand(const std::st
 					throw std::runtime_error("Key \"filename\" is missing in settings on calling runCommand(\"" + command + "\", esl::object::VectorPairStringStringValue* settings)");
 				}
 
-				boost::filesystem::path filenamePath(filename);
-				config::context::Context context(filenamePath);
+				config::context::Context context(true, filename);
 
 				context.loadLibraries();
 				context.install(*this);

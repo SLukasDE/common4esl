@@ -3,7 +3,7 @@
 
 #include <common4esl/config/Config.h>
 
-#include <tinyxml2/tinyxml2.h>
+#include <tinyxml2.h>
 
 #include <string>
 #include <ostream>

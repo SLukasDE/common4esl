@@ -3,7 +3,9 @@
 
 #include <common4esl/system/TaskFactory.h>
 
+#ifdef linux
 #include <sys/sysinfo.h>
+#endif
 
 #include <stdexcept>
 
@@ -50,12 +52,14 @@ DefaultTaskFactory::Settings::Settings(const std::vector<std::pair<std::string, 
 		}
     }
 
+#ifdef linux
 	if(threadsMax == 0) {
 	    int nProcs = get_nprocs();
 		if(nProcs > 0) {
 			threadsMax = static_cast<unsigned int>(nProcs);
 		}
 	}
+#endif
 
 	if(threadsMax == 0) {
 		throw std::runtime_error("Definition of 'max-threads' is missing.");

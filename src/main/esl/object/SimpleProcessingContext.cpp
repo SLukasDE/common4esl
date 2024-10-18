@@ -48,15 +48,7 @@ void SimpleProcessingContext::addAlias(const std::string& destinationId, const s
 std::unique_ptr<Object> SimpleProcessingContext::runCommand(const std::string& command, Object* argument) {
 	return object->runCommand(command, argument);
 }
-/*
-void SimpleProcessingContext::addData(const std::string& configuration) {
-	object->addData(configuration);
-}
 
-void SimpleProcessingContext::addFile(const boost::filesystem::path& filename) {
-	object->addFile(filename);
-}
-*/
 int SimpleProcessingContext::getReturnCode() const {
 	return object->getReturnCode();
 }
