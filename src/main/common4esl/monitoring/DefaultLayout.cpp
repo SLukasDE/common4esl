@@ -51,7 +51,8 @@ std::string formatTimestamp(const std::time_t& timestamp) {
 #else
     timePtr = localtime_r(&timestamp, &timeBuf);
 #endif
-    sprintf(timeStr, "$ %04d-%02d-%02d %02d:%02d:%02d ",
+
+    snprintf(timeStr, 23, "$ %04d-%02d-%02d %02d:%02d:%02d ",
             timePtr->tm_year + 1900,
             timePtr->tm_mon  + 1,
             timePtr->tm_mday,
