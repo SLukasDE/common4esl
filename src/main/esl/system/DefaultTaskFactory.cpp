@@ -3,7 +3,7 @@
 
 #include <common4esl/system/TaskFactory.h>
 
-#ifdef linux
+#ifdef __linux__
 #include <sys/sysinfo.h>
 #endif
 
@@ -52,7 +52,7 @@ DefaultTaskFactory::Settings::Settings(const std::vector<std::pair<std::string, 
 		}
     }
 
-#ifdef linux
+#ifdef __linux__
 	if(threadsMax == 0) {
 	    int nProcs = get_nprocs();
 		if(nProcs > 0) {
