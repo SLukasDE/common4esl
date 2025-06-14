@@ -116,7 +116,7 @@ Context::Context(bool isFile, const std::string& value)
 	loadXML(*element);
 }
 #if 0
-Context::Context(const boost::filesystem::path& filename)
+Context::Context(const std::filesystem::path& filename)
 : config::Config(filename.generic_string()),
   isRoot(true)
 {

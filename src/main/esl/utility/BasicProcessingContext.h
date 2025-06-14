@@ -30,6 +30,7 @@
 #include <esl/plugin/Registry.h>
 #include <esl/plugin/Plugin.h>
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <utility>
@@ -47,7 +48,7 @@ public:
 		return *static_cast<T*>(this);
 	}
 
-	T& addFile(const boost::filesystem::path& filename) {
+	T& addFile(const std::filesystem::path& filename) {
 		contextPtr->addFile(filename);
 		return *static_cast<T*>(this);
 	}

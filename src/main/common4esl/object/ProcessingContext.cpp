@@ -186,21 +186,7 @@ std::unique_ptr<esl::object::Object> ProcessingContext::runCommand(const std::st
 
 	throw std::runtime_error("Unknown command on calling runCommand(\"" + command + "\", <argument>)");
 }
-/*
-void ProcessingContext::addData(const std::string& configuration) {
-	config::context::Context config(configuration);
 
-	config.loadLibraries();
-	config.install(*this);
-}
-
-void ProcessingContext::addFile(const boost::filesystem::path& filename) {
-	config::context::Context config(filename);
-
-	config.loadLibraries();
-	config.install(*this);
-}
-*/
 void ProcessingContext::addAlias(const std::string& destinationId, const std::string& sourceId) {
 	esl::object::Object* object = findRawObject(sourceId);
 
